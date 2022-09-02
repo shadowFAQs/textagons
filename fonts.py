@@ -8,5 +8,6 @@ def get_fonts() -> list[font.Font]:
     return {
         'regular': font.Font(font_filepath / 'Comfortaa-Regular.ttf', 32),
         'bold': font.Font(font_filepath / 'Comfortaa-Bold.ttf', 32),
-        'bold_sm': font.Font(font_filepath / 'Comfortaa-Bold.ttf', 26)
+        'bold_sm': font.Font(font_filepath / 'Comfortaa-Bold.ttf', 26),
+        'small': font.Font(font_filepath / 'Comfortaa-Regular.ttf', 18)
     }

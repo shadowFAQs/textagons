@@ -113,7 +113,10 @@ class Tile(pygame.sprite.Sprite):
 
     def move_toward_target(self) -> None:
         if self.rect.y < self.target_y:
-            self.rect.move_ip((0, 1))
+            step = 2
+            self.rect.move_ip((0, step))
+        if self.rect.y > self.target_y:
+            self.rect.y = self.target_y
 
     def remove(self, y_offset: float) -> None:
         '''

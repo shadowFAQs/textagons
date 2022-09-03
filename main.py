@@ -10,8 +10,23 @@ from tile_group import TileGroup
 from ui import Textfield, UIGroup
 
 
-SCREEN_WIDTH = 384
-SCREEN_HEIGHT = 256
+'''
+"Textagons" is an updated implementation of the
+classic PopCap game "Bookworm".
+
+The longest word in the dictionary is
+"electroencephalographic", which has 23 letters.
+R_VALUES is a baseline for the rarity of letters
+in a bonus word, and has 22 "levels".
+Each word in dictionary.txt, and therefore in
+WORDS_WITH_R_VALUES, is listed in lowercase along
+with its computed rarity; this keeps the game
+from choosing overly easy/common bonus words.
+'''
+
+
+SCREEN_WIDTH = 525
+SCREEN_HEIGHT = 425
 BONUS_WORD = ''
 BONUS_WORD_LENGTH = 2
 SCORE = 0
@@ -22,7 +37,6 @@ R_VALUES = [0, 0, 0, 0.16, 0.22, 0.28, 0.36, 0.42, 0.48, 0.55, 0.61, 0.68,
 
 
 def check_word_against_dictionaty(word: str) -> bool:
-    print(f'Submit word: "{word}"')
     return word.lower() in DICTIONARY
 
 
@@ -176,8 +190,8 @@ def main() -> None:
     ui_group = setup_ui(fonts)
 
     tile_size = 64
-    num_columns = 4
-    num_rows = 4
+    num_columns = 7
+    num_rows = 7
     selected_tiles = []
 
     tiles = TileGroup(num_columns=num_columns)

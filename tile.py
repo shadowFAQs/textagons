@@ -30,12 +30,13 @@ class Tile(pygame.sprite.Sprite):
         self.image = pygame.Surface((tile_size, tile_size))
         self.rect = self.image.get_rect(topleft=coords)
         self.column = column
+        self.ay = 0
         self.collision_poly = None
         self.fill_color = dark_gray
         self.marked = False
         self.selected = False
-        self.value = 0
         self.target_y = self.rect.y
+        self.value = 0
 
         self.choose_letter()
         self.deselect()
@@ -122,9 +123,10 @@ class Tile(pygame.sprite.Sprite):
 
     def move_toward_target(self) -> None:
         if self.rect.y < self.target_y:
-            step = 2
-            self.rect.move_ip((0, step))
+            self.ay += .35
+            self.rect.move_ip((0, self.ay))
         if self.rect.y > self.target_y:
+            self.ay = 0
             self.rect.y = self.target_y
 
     def remove(self, y_offset: float) -> None:

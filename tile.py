@@ -133,10 +133,13 @@ class Tile(pygame.sprite.Sprite):
         Resets tile state, chooses a new letter,
         and moves up off the top of the screen.
         '''
-        self.deselect()
-        self.marked = False
         self.rect.move_ip(
             (0, self.rect.y * -1 - self.rect.h * y_offset))
+        self.scramble()
+
+    def scramble(self) -> None:
+        self.deselect()
+        self.marked = False
         self.choose_letter()
         self.update()
 

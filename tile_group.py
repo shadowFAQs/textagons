@@ -50,3 +50,7 @@ class TileGroup(pygame.sprite.Group):
             selected_tiles_by_column[tile.column] += 1
             tile.remove(y_offset=selected_tiles_by_column[tile.column])
             tile.target_y = tile.rect.h / 2 - 6 if tile.column % 2 else -2
+
+    def scramble(self) -> None:
+        for tile in self.sprites():
+            tile.scramble()

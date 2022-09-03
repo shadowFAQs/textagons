@@ -30,30 +30,38 @@ def get_word_from_tiles(tiles: list[Tile]) -> str:
     return ''.join([t.letter for t in tiles]).upper()
 
 
-def get_clicked_tile(tiles: TileGroup) -> Tile | None:
+def get_clicked_sprite(
+    group: pygame.sprite.Group) -> pygame.sprite.Sprite | None:
     mouse_pos = pygame.mouse.get_pos()
 
-    tiles_iter = iter(tiles)
+    sprites_iter = iter(group)
     while True:
         try:
-            tile = next(tiles_iter)
-            if tile.collide_point(mouse_pos):
-                return tile
+            sprite = next(sprites_iter)
+            if sprite.collide_point(mouse_pos):
+                return sprite
         except StopIteration:
             return None
 
 
-def handle_left_mouse_down(tiles: TileGroup,
-                           selected: list[Tile]) -> list[Tile]:
-    tile = get_clicked_tile(tiles)
+def handle_left_mouse_down(
+    ui_group: UIGroup, tiles: TileGroup,
+    selected: list[Tile]) -> Textfield | Tile:
+    button = get_clicked_sprite(ui_group)
+    if button:
+        match button.label:
+            case 'btn_scramble':
+                ui_group.clear_text('current_word')
+                tiles.scramble()
+        return button
+
+    tile = get_clicked_sprite(tiles)
     if tile:
-        return select_tile(tile, tiles, selected)
-    else:
-        return selected
+        return tile
 
 
-def select_tile(clicked_tile: Tile, tiles: TileGroup,
-                selected: list[Tile]) -> list[Tile]:
+def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
+                          selected: list[Tile]) -> list[Tile]:
     if selected:
         if clicked_tile == selected[-1]:
             if len(selected) > 2:
@@ -99,6 +107,7 @@ def setup_ui(fonts: list[pygame.font.Font]) -> UIGroup:
     ui_group.add(Textfield(label='bonus_word', font=fonts['bold_sm'],
                            initial_text=BONUS_WORD, align='topright',
                            offset=(-10, 44)))
+
     # Currently selected word
     ui_group.add(Textfield(label='current_word_label', font=fonts['small'],
                            initial_text='Current word', align='topright',
@@ -106,6 +115,11 @@ def setup_ui(fonts: list[pygame.font.Font]) -> UIGroup:
     ui_group.add(Textfield(label='current_word', font=fonts['bold_sm'],
                            initial_text='', align='topright',
                            offset=(-10, 102)))
+
+    # Scramble button
+    ui_group.add(Textfield(label='btn_scramble', font=fonts['small'],
+                           initial_text='SCRAMBLE', align='bottomright',
+                           offset=(-10, -20), static=True, draw_border=True))
 
     return ui_group
 
@@ -150,16 +164,21 @@ def main() -> None:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if tile_click_enabled:
                     if event.button == 3:  # Right click
-                        tile = get_clicked_tile(tiles)
+                        tile = get_clicked_sprite(tiles)
                         if tile:
-                            print(tile.letter)
                             tile.toggle_mark()
                     elif event.button == 1:  # Left click
-                        selected_tiles = handle_left_mouse_down(
-                            tiles, selected_tiles)
-                        ui_group.update_text(
-                            textfield_label='current_word',
-                            text=get_word_from_tiles(selected_tiles))
+                        clicked_sprite = handle_left_mouse_down(
+                            ui_group, tiles, selected_tiles)
+                        if type(clicked_sprite) == Tile:
+                            selected_tiles = update_selected_tiles(
+                                clicked_sprite, tiles, selected_tiles)
+                            ui_group.update_text(
+                                textfield_label='current_word',
+                                text=get_word_from_tiles(selected_tiles))
+                        elif type(clicked_sprite) == Textfield:
+                            if clicked_sprite.label == 'btn_scramble':
+                                selected_tiles = []
 
         screen.fill(bg_color)
 

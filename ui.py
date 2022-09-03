@@ -18,7 +18,7 @@ class Textfield(pygame.sprite.Sprite):
         self.text_color = text_color
         self.static = static
         self.draw_border = draw_border
-        self.buffer_text = ''
+        self.buffer_text = None
         self.flash_timer = 0
         self.flash_timer_max = 120
         self.flash_color = teal
@@ -32,7 +32,9 @@ class Textfield(pygame.sprite.Sprite):
                 self.text_color = self.flash_color \
                     if self.text_color == light_gray else light_gray
             if not self.flash_timer:
-                self.text = self.buffer_text
+                if self.buffer_text is not None:
+                    self.text = self.buffer_text
+                    self.buffer_text = None
         else:
             self.text_color = light_gray
 
@@ -43,12 +45,14 @@ class Textfield(pygame.sprite.Sprite):
         self.flash_timer = self.flash_timer_max
         self.flash_color = flash_color
 
+    def flash_and_clear(self, flash_color: pygame.Color) -> None:
+        self.flash_timer = self.flash_timer_max
+        self.flash_color = flash_color
+        self.buffer_text = ''
+
     def kill_flash(self) -> None:
         self.flash_timer = 0
         self.text_color = light_gray
-        if self.buffer_text:
-            self.text = self.buffer_text
-        self.buffer_text = ''
 
     def set_alignment_and_rect(self, align: str, offset: tuple[float]) -> None:
         from main import SCREEN_WIDTH, SCREEN_HEIGHT

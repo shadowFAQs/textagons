@@ -40,7 +40,7 @@ def check_word_against_dictionaty(word: str) -> bool:
     return word.lower() in DICTIONARY
 
 
-def choose_new_bonus_word() -> None:
+def choose_new_bonus_word(ui_group) -> None:
     global BONUS_WORD
     global BONUS_WORD_LENGTH
     BONUS_WORD_LENGTH += 1
@@ -48,6 +48,8 @@ def choose_new_bonus_word() -> None:
                  if len(w[0]) == BONUS_WORD_LENGTH \
                  and w[1] > R_VALUES[BONUS_WORD_LENGTH]]
     BONUS_WORD = choice(word_pool).upper()
+    ui_group.bonus_word.set_text(BONUS_WORD)
+    ui_group.bonus_word.flash(yellow)
 
 
 def get_word_from_tiles(tiles: list[Tile]) -> str:
@@ -149,7 +151,7 @@ def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
                     bonus_mult = 1
                     if word == BONUS_WORD:
                         bonus_mult = 3
-                        choose_new_bonus_word()
+                        choose_new_bonus_word(ui_group)
                     SCORE += score_tiles(selected, bonus_mult)
                     tiles.remove_selected()
                     return []
@@ -157,7 +159,7 @@ def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
                     print(f'Word "{get_word_from_tiles(selected)}" ' \
                           'not in dictionary')
                     tiles.deselect()
-                    ui_group.flash('current_word', red)
+                    ui_group.current_word.flash_and_clear(red)
                     return []
             elif len(selected) == 1:
                 clicked_tile.deselect()
@@ -189,9 +191,8 @@ def main() -> None:
     fonts = get_fonts()
 
     load_dictionary()
-    choose_new_bonus_word()
-
     ui_group = setup_ui(fonts)
+    choose_new_bonus_word(ui_group)
 
     tile_size = 64
     num_columns = 7
@@ -236,7 +237,6 @@ def main() -> None:
                                 ui_group)
                             ui_group.current_word.set_text(
                                 get_word_from_tiles(selected_tiles))
-                            ui_group.bonus_word.set_text(BONUS_WORD)
                             ui_group.update_textfield_by_label(label='score',
                                                                text=SCORE)
                         elif type(clicked_sprite) == Textfield:

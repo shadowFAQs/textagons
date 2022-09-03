@@ -15,7 +15,7 @@ class Textfield(pygame.sprite.Sprite):
         self.font = font
         self.align = align
         self.offset = offset
-        self.text_color = text_color
+        self.default_text_color = text_color
         self.static = static
         self.draw_border = draw_border
         self.buffer_text = None
@@ -30,13 +30,14 @@ class Textfield(pygame.sprite.Sprite):
             self.flash_timer -= 1
             if not self.flash_timer % 5:
                 self.text_color = self.flash_color \
-                    if self.text_color == light_gray else light_gray
+                    if self.text_color == light_gray \
+                    else self.default_text_color
             if not self.flash_timer:
                 if self.buffer_text is not None:
                     self.text = self.buffer_text
                     self.buffer_text = None
         else:
-            self.text_color = light_gray
+            self.text_color = self.default_text_color
 
     def collide_point(self, point: tuple[float]) -> bool:
         return self.rect.collidepoint(point)
@@ -117,6 +118,12 @@ class UIGroup(pygame.sprite.Group):
         textfield = [s for s in self.sprites() \
                      if s.label == textfield_label][0]
         textfield.flash(flash_color)
+
+    def show_score_delta(self, delta: str) -> None:
+        textfield = [s for s in self.sprites() \
+                     if s.label == 'score_delta'][0]
+        textfield.set_text(f'+{delta}')
+        textfield.flash_and_clear(green)
 
     def update_textfield_by_label(self, label: str, text: str) -> None:
         textfield = [s for s in self.sprites() if s.label == label][0]

@@ -111,6 +111,9 @@ def setup_ui(fonts: list[pygame.font.Font]) -> UIGroup:
                            offset=(-10, 5), static=True))
     ui_group.add(Textfield(label='score', font=fonts['bold_sm'],
                            initial_text=0, align='topright', offset=(-10, 29)))
+    ui_group.add(Textfield(label='score_delta', font=fonts['bold_sm'],
+                           initial_text='', align='topright',
+                           offset=(-75, 1), text_color=green))
 
     # Bonus word display
     ui_group.add(Textfield(label='bonus_label', font=fonts['small'],
@@ -152,7 +155,9 @@ def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
                     if word == BONUS_WORD:
                         bonus_mult = 3
                         choose_new_bonus_word(ui_group)
-                    SCORE += score_tiles(selected, bonus_mult)
+                    delta = score_tiles(selected, bonus_mult)
+                    SCORE += delta
+                    ui_group.show_score_delta(delta=str(delta))
                     tiles.remove_selected()
                     return []
                 else:

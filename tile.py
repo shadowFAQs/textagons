@@ -1,5 +1,5 @@
 import math
-import random
+from random import choices
 from string import ascii_uppercase
 
 import pygame
@@ -11,6 +11,12 @@ from fonts import *
 
 
 LETTER_CHOICES = [c if c != 'Q' else 'Qu' for c in ascii_uppercase]
+LETTER_WEIGHTS = { 'A': 0.09, 'B': 0.02, 'C': 0.02, 'D': 0.04, 'E': 0.12,
+                   'F': 0.02, 'G': 0.03, 'H': 0.02, 'I': 0.09, 'J': 0.01,
+                   'K': 0.01, 'L': 0.04, 'M': 0.03, 'N': 0.06, 'O': 0.08,
+                   'P': 0.02, 'Qu': 0.01, 'R': 0.06, 'S': 0.05, 'T': 0.06,
+                   'U': 0.04, 'V': 0.02, 'W': 0.02, 'X': 0.01, 'Y': 0.02,
+                   'Z': 0.01 }
 
 
 class Tile(pygame.sprite.Sprite):
@@ -69,7 +75,9 @@ class Tile(pygame.sprite.Sprite):
         return self.collision_poly.contains(Point(point))
 
     def choose_letter(self) -> None:
-        self.letter = random.choice(LETTER_CHOICES)
+        weights = [LETTER_WEIGHTS[l] for l in LETTER_CHOICES]
+        self.letter = choices(population=LETTER_CHOICES,
+                              weights=weights, k=1)[0]
         self.value = self.lookup_letter_value(self.letter)
 
     def deselect(self) -> None:

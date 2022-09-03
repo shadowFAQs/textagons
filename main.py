@@ -13,7 +13,7 @@ BONUS_WORD = ''
 BONUS_WORD_LENGTH = 2
 
 
-def check_word_against_dictionaty(selected_tiles: list[Tile]) -> bool:
+def check_word_against_dictionaty(word: str) -> bool:
     print(f'Submit word: "{word}"')
     return True  # TODO: Add dictionary here
 
@@ -49,7 +49,7 @@ def select_tile(clicked_tile: Tile, tiles: TileGroup,
     if selected:
         if clicked_tile == selected[-1]:
             if len(selected) > 2:
-                word = get_word_from_tiles(selected_tiles)
+                word = get_word_from_tiles(selected)
                 if check_word_against_dictionaty(word):
                     if word == BONUS_WORD:
                         print('Bonus word!')

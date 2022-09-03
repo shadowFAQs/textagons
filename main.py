@@ -81,6 +81,27 @@ def select_tile(clicked_tile: Tile, tiles: TileGroup,
         return [clicked_tile]
 
 
+def setup_ui(fonts: list[pygame.font.Font]) -> UIGroup:
+    ui_group = UIGroup()
+
+    # Bonus word display
+    ui_group.add(Textfield(label='bonus_label', font=fonts['small'],
+                           initial_text='Bonus word', align='topright',
+                           offset=(-10, 20), static=True))
+    ui_group.add(Textfield(label='bonus_word', font=fonts['bold_sm'],
+                           initial_text=BONUS_WORD, align='topright',
+                           offset=(-10, 44)))
+    # Currently selected word
+    ui_group.add(Textfield(label='current_word_label', font=fonts['small'],
+                           initial_text='Current word', align='topright',
+                           offset=(-10, 78), static=True))
+    ui_group.add(Textfield(label='current_word', font=fonts['bold_sm'],
+                           initial_text='', align='topright',
+                           offset=(-10, 102)))
+
+    return ui_group
+
+
 def main() -> None:
     screen_dims = (SCREEN_WIDTH, SCREEN_HEIGHT)
     screen = pygame.display.set_mode(screen_dims)
@@ -91,13 +112,7 @@ def main() -> None:
 
     choose_new_bonus_word()
 
-    ui_group = UIGroup()
-    ui_group.add(Textfield(label='bonus_label', font=fonts['small'],
-                           initial_text='Bonus word', align='topright',
-                           offset=(-10, 20), static=True))
-    ui_group.add(Textfield(label='bonus_word', font=fonts['bold_sm'],
-                           initial_text=BONUS_WORD, align='topright',
-                           offset=(-10, 44)))
+    ui_group = setup_ui(fonts)
 
     tile_size = 64
     num_columns = 4
@@ -124,6 +139,9 @@ def main() -> None:
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 selected_tiles = handle_mouse_down(tiles, selected_tiles)
+                ui_group.update_text(
+                    textfield_label='current_word',
+                    text=get_word_from_tiles(selected_tiles))
 
         screen.fill(bg_color)
 

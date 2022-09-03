@@ -43,3 +43,8 @@ class UIGroup(pygame.sprite.Group):
 
     def __init__(self):
         super().__init__()
+
+    def update_text(self, textfield_label: str, text: str) -> None:
+        textfield = [s for s in self.sprites() \
+                     if s.label == textfield_label][0]
+        textfield.set_text(text)

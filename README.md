@@ -9,7 +9,7 @@ This is a Pygame implementation of the classic Flash game "Bookworm" by PopCap. 
 * Right click a tile to mark it. This makes it easy to keep track of tiles you want to save for future bonus words.
 
 ### Thanks to
-* Burak Karaca on ArtStation for [inspiration]((https://www.artstation.com/artwork/Lemkll))
+* Burak Karaca on ArtStation for [inspiration](https://www.artstation.com/artwork/Lemkll)
 * Johan Aakerlund for [the "Comfortaa" font](https://www.dafont.com/comfortaa.font)
 
 ### TODO

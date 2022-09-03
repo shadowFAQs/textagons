@@ -11,6 +11,7 @@ SCREEN_WIDTH = 384
 SCREEN_HEIGHT = 256
 BONUS_WORD = ''
 BONUS_WORD_LENGTH = 2
+SCORE = 0
 
 
 def check_word_against_dictionaty(word: str) -> bool:
@@ -23,7 +24,6 @@ def choose_new_bonus_word() -> None:
     global BONUS_WORD_LENGTH
     BONUS_WORD_LENGTH += 1
     BONUS_WORD = 'NEW' + ''.join(['W' for _ in range(BONUS_WORD_LENGTH - 3)])
-    print(f'Bonus word is "{BONUS_WORD}" (length: {BONUS_WORD_LENGTH})')
 
 
 def get_word_from_tiles(tiles: list[Tile]) -> str:
@@ -60,16 +60,58 @@ def handle_left_mouse_down(
         return tile
 
 
+def score_tiles(tiles: list[Tile], bonus_mult: int) -> int:
+    return sum([t.value for t in tiles]) * len(tiles) * bonus_mult
+
+
+def setup_ui(fonts: list[pygame.font.Font]) -> UIGroup:
+    ui_group = UIGroup()
+
+    # Score display
+    ui_group.add(Textfield(label='score_label', font=fonts['small'],
+                           initial_text='Score', align='topright',
+                           offset=(-10, 5), static=True))
+    ui_group.add(Textfield(label='score', font=fonts['bold_sm'],
+                           initial_text=0, align='topright', offset=(-10, 29)))
+
+    # Bonus word display
+    ui_group.add(Textfield(label='bonus_label', font=fonts['small'],
+                           initial_text='Bonus word', align='topright',
+                           offset=(-10, 71), static=True))
+    ui_group.add(Textfield(label='bonus_word', font=fonts['bold_sm'],
+                           initial_text=BONUS_WORD, align='topright',
+                           offset=(-10, 95)))
+
+    # Currently selected word
+    ui_group.add(Textfield(label='current_word_label', font=fonts['small'],
+                           initial_text='Current word', align='topright',
+                           offset=(-10, 137), static=True))
+    ui_group.add(Textfield(label='current_word', font=fonts['bold_sm'],
+                           initial_text='', align='topright',
+                           offset=(-10, 161)))
+
+    # Scramble button
+    ui_group.add(Textfield(label='btn_scramble', font=fonts['small'],
+                           initial_text='SCRAMBLE', align='bottomright',
+                           offset=(-10, -10), static=True, draw_border=True))
+
+    return ui_group
+
+
 def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
                           selected: list[Tile]) -> list[Tile]:
+    global SCORE
+
     if selected:
         if clicked_tile == selected[-1]:
             if len(selected) > 2:
                 word = get_word_from_tiles(selected)
                 if check_word_against_dictionaty(word):
+                    bonus_mult = 1
                     if word == BONUS_WORD:
-                        print('Bonus word!')
+                        bonus_mult = 3
                         choose_new_bonus_word()
+                    SCORE += score_tiles(selected, bonus_mult)
                     tiles.remove_selected()
                     return []
                 else:
@@ -95,33 +137,6 @@ def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
     else:
         clicked_tile.select()
         return [clicked_tile]
-
-
-def setup_ui(fonts: list[pygame.font.Font]) -> UIGroup:
-    ui_group = UIGroup()
-
-    # Bonus word display
-    ui_group.add(Textfield(label='bonus_label', font=fonts['small'],
-                           initial_text='Bonus word', align='topright',
-                           offset=(-10, 20), static=True))
-    ui_group.add(Textfield(label='bonus_word', font=fonts['bold_sm'],
-                           initial_text=BONUS_WORD, align='topright',
-                           offset=(-10, 44)))
-
-    # Currently selected word
-    ui_group.add(Textfield(label='current_word_label', font=fonts['small'],
-                           initial_text='Current word', align='topright',
-                           offset=(-10, 78), static=True))
-    ui_group.add(Textfield(label='current_word', font=fonts['bold_sm'],
-                           initial_text='', align='topright',
-                           offset=(-10, 102)))
-
-    # Scramble button
-    ui_group.add(Textfield(label='btn_scramble', font=fonts['small'],
-                           initial_text='SCRAMBLE', align='bottomright',
-                           offset=(-10, -20), static=True, draw_border=True))
-
-    return ui_group
 
 
 def main() -> None:
@@ -160,22 +175,29 @@ def main() -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if tile_click_enabled:
+
                     if event.button == 3:  # Right click
                         tile = get_clicked_sprite(tiles)
                         if tile:
                             tile.toggle_mark()
+
                     elif event.button == 1:  # Left click
                         clicked_sprite = handle_left_mouse_down(
                             ui_group, tiles, selected_tiles)
+
                         if type(clicked_sprite) == Tile:
                             selected_tiles = update_selected_tiles(
                                 clicked_sprite, tiles, selected_tiles)
                             ui_group.update_text(
                                 textfield_label='current_word',
                                 text=get_word_from_tiles(selected_tiles))
+                            ui_group.update_text(textfield_label='bonus_word',
+                                                 text=BONUS_WORD)
+                            ui_group.update_text(textfield_label='score',
+                                                 text=SCORE)
+
                         elif type(clicked_sprite) == Textfield:
                             if clicked_sprite.label == 'btn_scramble':
                                 selected_tiles = []

@@ -35,8 +35,8 @@ class Textfield(pygame.sprite.Sprite):
             topleft=(screen_offset_x + offset[0],
                      screen_offset_y + offset[1]))
 
-    def set_text(self, text: str) -> None:
-        self.text = text
+    def set_text(self, text: str | int) -> None:
+        self.text = str(text)
 
         if self.draw_border:
             text_surf = self.font.render(self.text, True, self.text_color)
@@ -52,7 +52,7 @@ class Textfield(pygame.sprite.Sprite):
         if self.draw_border:
             rect = pygame.Rect(0, 0, self.rect.w, self.rect.h)
             pygame.draw.rect(self.image, light_gray, rect, width=1,
-                             border_radius=0)
+                             border_radius=2)
 
     def update(self) -> None:
         pass

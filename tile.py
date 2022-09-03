@@ -32,6 +32,8 @@ class Tile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=coords)
         self.column = column
         self.collision_poly = None
+        self.fill_color = dark_gray
+        self.marked = False
         self.selected = False
         self.value = 0
         self.target_y = self.rect.y
@@ -82,9 +84,6 @@ class Tile(pygame.sprite.Sprite):
 
     def deselect(self) -> None:
         self.selected = False
-        self.border_color = light_gray
-        self.fill_color = dark_gray
-        self.text_color = light_gray
 
     def draw_poly_and_set_collision(self) -> pygame.Surface:
         '''
@@ -95,10 +94,13 @@ class Tile(pygame.sprite.Sprite):
         hexagon = pygame.Surface((tile_size, tile_size))
         hexagon.fill(self.bg_color)
 
-        # Debug: Draw rect border
-        # pygame.draw.rect(hexagon, teal, pygame.Rect(0, 0, tile_size, tile_size), width=1)
-
         # Draw border hexagon
+        if self.selected:
+            self.border_color = bright_green
+            self.text_color = bright_green
+        else:
+            self.border_color = yellow if self.marked else light_gray
+            self.text_color = light_gray
         points = self.calculate_hexagon_points(
             center_x=tile_size / 2, center_y=tile_size / 2,
             radius=tile_size / 2 - 4)
@@ -132,6 +134,7 @@ class Tile(pygame.sprite.Sprite):
         and moves up off the top of the screen.
         '''
         self.deselect()
+        self.marked = False
         self.rect.move_ip(
             (0, self.rect.y * -1 - self.rect.h * y_offset))
         self.choose_letter()
@@ -139,9 +142,6 @@ class Tile(pygame.sprite.Sprite):
 
     def select(self) -> None:
         self.selected = True
-        self.border_color = bright_green
-        self.fill_color = dark_gray
-        self.text_color = bright_green
 
     def set_collision_poly(self, points: list[tuple[float]]) -> None:
         updated_points = []
@@ -168,3 +168,9 @@ class Tile(pygame.sprite.Sprite):
         self.image.blit(rendered, (center_x, center_y))
 
         self.move_toward_target()
+
+    def toggle_mark(self) -> None:
+        if not self.selected:
+            self.marked = not self.marked
+
+

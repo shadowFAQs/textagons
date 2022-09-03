@@ -30,7 +30,7 @@ def get_word_from_tiles(tiles: list[Tile]) -> str:
     return ''.join([t.letter for t in tiles]).upper()
 
 
-def handle_mouse_down(tiles: TileGroup, selected: list[Tile]) -> list[Tile]:
+def get_clicked_tile(tiles: TileGroup) -> Tile | None:
     mouse_pos = pygame.mouse.get_pos()
 
     tiles_iter = iter(tiles)
@@ -38,10 +38,18 @@ def handle_mouse_down(tiles: TileGroup, selected: list[Tile]) -> list[Tile]:
         try:
             tile = next(tiles_iter)
             if tile.collide_point(mouse_pos):
-                selected = select_tile(tile, tiles, selected)
-                return selected
+                return tile
         except StopIteration:
-            return selected
+            return None
+
+
+def handle_left_mouse_down(tiles: TileGroup,
+                           selected: list[Tile]) -> list[Tile]:
+    tile = get_clicked_tile(tiles)
+    if tile:
+        return select_tile(tile, tiles, selected)
+    else:
+        return selected
 
 
 def select_tile(clicked_tile: Tile, tiles: TileGroup,
@@ -141,10 +149,17 @@ def main() -> None:
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if tile_click_enabled:
-                    selected_tiles = handle_mouse_down(tiles, selected_tiles)
-                    ui_group.update_text(
-                        textfield_label='current_word',
-                        text=get_word_from_tiles(selected_tiles))
+                    if event.button == 3:  # Right click
+                        tile = get_clicked_tile(tiles)
+                        if tile:
+                            print(tile.letter)
+                            tile.toggle_mark()
+                    elif event.button == 1:  # Left click
+                        selected_tiles = handle_left_mouse_down(
+                            tiles, selected_tiles)
+                        ui_group.update_text(
+                            textfield_label='current_word',
+                            text=get_word_from_tiles(selected_tiles))
 
         screen.fill(bg_color)
 

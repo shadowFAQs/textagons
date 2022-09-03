@@ -96,8 +96,8 @@ class Tile(pygame.sprite.Sprite):
 
         # Draw border hexagon
         if self.selected:
-            self.border_color = bright_green
-            self.text_color = bright_green
+            self.border_color = green
+            self.text_color = green
         else:
             self.border_color = yellow if self.marked else light_gray
             self.text_color = light_gray

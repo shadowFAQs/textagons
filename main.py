@@ -131,11 +131,14 @@ def setup_ui(fonts: list[pygame.font.Font]) -> UIGroup:
                            initial_text='SCRAMBLE', align='bottomright',
                            offset=(-10, -10), static=True, draw_border=True))
 
+    ui_group.post_init()
+
     return ui_group
 
 
 def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
-                          selected: list[Tile]) -> list[Tile]:
+                          selected: list[Tile],
+                          ui_group: UIGroup) -> list[Tile]:
     global SCORE
 
     if selected:
@@ -154,6 +157,7 @@ def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
                     print(f'Word "{get_word_from_tiles(selected)}" ' \
                           'not in dictionary')
                     tiles.deselect()
+                    ui_group.flash('current_word', red)
                     return []
             elif len(selected) == 1:
                 clicked_tile.deselect()
@@ -226,16 +230,15 @@ def main() -> None:
                             ui_group, tiles, selected_tiles)
 
                         if type(clicked_sprite) == Tile:
+                            ui_group.current_word.kill_flash()
                             selected_tiles = update_selected_tiles(
-                                clicked_sprite, tiles, selected_tiles)
-                            ui_group.update_text(
-                                textfield_label='current_word',
-                                text=get_word_from_tiles(selected_tiles))
-                            ui_group.update_text(textfield_label='bonus_word',
-                                                 text=BONUS_WORD)
-                            ui_group.update_text(textfield_label='score',
-                                                 text=SCORE)
-
+                                clicked_sprite, tiles, selected_tiles,
+                                ui_group)
+                            ui_group.current_word.set_text(
+                                get_word_from_tiles(selected_tiles))
+                            ui_group.bonus_word.set_text(BONUS_WORD)
+                            ui_group.update_textfield_by_label(label='score',
+                                                               text=SCORE)
                         elif type(clicked_sprite) == Textfield:
                             if clicked_sprite.label == 'btn_scramble':
                                 selected_tiles = []
@@ -246,6 +249,7 @@ def main() -> None:
         for tile in tiles:
             screen.blit(tile.image, (tile.rect.x, tile.rect.y))
 
+        ui_group.update()
         for element in ui_group:
             screen.blit(element.image, (element.rect.x, element.rect.y))
 

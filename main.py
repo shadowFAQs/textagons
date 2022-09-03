@@ -161,8 +161,6 @@ def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
                     tiles.remove_selected()
                     return []
                 else:
-                    print(f'Word "{get_word_from_tiles(selected)}" ' \
-                          'not in dictionary')
                     tiles.deselect()
                     ui_group.current_word.flash_and_clear(red)
                     return []

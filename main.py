@@ -133,15 +133,18 @@ def main() -> None:
     while running:
         clock.tick(60)
 
+        tile_click_enabled = tiles.is_all_at_target()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                selected_tiles = handle_mouse_down(tiles, selected_tiles)
-                ui_group.update_text(
-                    textfield_label='current_word',
-                    text=get_word_from_tiles(selected_tiles))
+                if tile_click_enabled:
+                    selected_tiles = handle_mouse_down(tiles, selected_tiles)
+                    ui_group.update_text(
+                        textfield_label='current_word',
+                        text=get_word_from_tiles(selected_tiles))
 
         screen.fill(bg_color)
 

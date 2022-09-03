@@ -19,6 +19,15 @@ class TileGroup(pygame.sprite.Group):
         return [t for t in self.sprites() if t.column == tile.column \
                 and t.rect.y < tile.rect.y]
 
+    def is_all_at_target(self) -> bool:
+        '''
+        Checks if all tiles are on their Y target
+        positions. Used for disabling input while
+        tiles are falling.
+
+        '''
+        return all([t.rect.y == t.target_y for t in self.sprites()])
+
     def remove_selected(self) -> None:
         '''
         Counts the number of tiles in each column,

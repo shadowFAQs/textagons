@@ -6,8 +6,7 @@ import pygame
 from pygame import gfxdraw
 from shapely.geometry import Polygon, Point
 
-from colors import *
-from fonts import *
+from assets.colors import *
 
 
 LETTER_CHOICES = [c if c != 'Q' else 'Qu' for c in ascii_uppercase]

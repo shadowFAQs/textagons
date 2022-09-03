@@ -1,6 +1,6 @@
 import pygame
 
-from colors import *
+from assets.colors import *
 
 
 class Textfield(pygame.sprite.Sprite):

@@ -1,7 +1,10 @@
+from pathlib import Path
+from random import choice
+
 import pygame
 
-from colors import *
-from fonts import get_fonts
+from assets.colors import *
+from assets.fonts import get_fonts
 from tile import Tile
 from tile_group import TileGroup
 from ui import Textfield, UIGroup
@@ -12,18 +15,25 @@ SCREEN_HEIGHT = 256
 BONUS_WORD = ''
 BONUS_WORD_LENGTH = 2
 SCORE = 0
+DICTIONARY = []
+WORDS_WITH_R_VALUES = []
+R_VALUES = [0, 0, 0, 0.16, 0.22, 0.28, 0.36, 0.42, 0.48, 0.55, 0.61, 0.68,
+            0.74, 0.8, 0.87, 0.93, 0.99, 1.07, 1.13, 1.28, 1.31, 1.38]
 
 
 def check_word_against_dictionaty(word: str) -> bool:
     print(f'Submit word: "{word}"')
-    return True  # TODO: Add dictionary here
+    return word.lower() in DICTIONARY
 
 
 def choose_new_bonus_word() -> None:
     global BONUS_WORD
     global BONUS_WORD_LENGTH
     BONUS_WORD_LENGTH += 1
-    BONUS_WORD = 'NEW' + ''.join(['W' for _ in range(BONUS_WORD_LENGTH - 3)])
+    word_pool = [w[0] for w in WORDS_WITH_R_VALUES \
+                 if len(w[0]) == BONUS_WORD_LENGTH \
+                 and w[1] > R_VALUES[BONUS_WORD_LENGTH]]
+    BONUS_WORD = choice(word_pool).upper()
 
 
 def get_word_from_tiles(tiles: list[Tile]) -> str:
@@ -58,6 +68,18 @@ def handle_left_mouse_down(
     tile = get_clicked_sprite(tiles)
     if tile:
         return tile
+
+
+def load_dictionary() -> None:
+    global DICTIONARY
+    global WORDS_WITH_R_VALUES
+
+    filepath = Path(__file__).parent / 'assets'
+    with open(filepath / 'dictionary.txt') as file:
+        for line in file.read().split('\n'):
+            entry = line.split(',')
+            DICTIONARY.append(entry[0])
+            WORDS_WITH_R_VALUES.append([entry[0], float(entry[1])])
 
 
 def score_tiles(tiles: list[Tile], bonus_mult: int) -> int:
@@ -117,7 +139,8 @@ def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
                 else:
                     print(f'Word "{get_word_from_tiles(selected)}" ' \
                           'not in dictionary')
-                tiles.deselect()
+                    tiles.deselect()
+                    return []
             elif len(selected) == 1:
                 clicked_tile.deselect()
                 return []
@@ -147,6 +170,7 @@ def main() -> None:
     bg_color = dark_gray
     fonts = get_fonts()
 
+    load_dictionary()
     choose_new_bonus_word()
 
     ui_group = setup_ui(fonts)

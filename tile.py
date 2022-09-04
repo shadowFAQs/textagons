@@ -21,21 +21,22 @@ LETTER_WEIGHTS = { 'A': 0.09, 'B': 0.02, 'C': 0.02, 'D': 0.04, 'E': 0.12,
 class Tile(pygame.sprite.Sprite):
 
     def __init__(self, tile_size: int, coords: tuple[float], column: int,
-                 bg_color: pygame.Color,
                  fonts: list[pygame.font.Font]) -> None:
         super().__init__()
 
-        self.bg_color = bg_color
         self.fonts = fonts
         self.image = pygame.Surface((tile_size, tile_size))
         self.rect = self.image.get_rect(topleft=coords)
         self.column = column
         self.ay = 0
+        self.border_color = light_gray
         self.collision_poly = None
         self.fill_color = dark_gray
         self.marked = False
         self.selected = False
         self.target_y = self.rect.y
+        self.text_color = light_gray
+        self.type = 1
         self.value = 0
 
         self.choose_letter()
@@ -54,24 +55,6 @@ class Tile(pygame.sprite.Sprite):
             )
 
         return points
-
-    @staticmethod
-    def lookup_letter_value(letter: str) -> int:
-        match letter:
-            case 'A' | 'E' | 'I' | 'L' | 'N' | 'O' | 'R' | 'S' | 'T' | 'U':
-                return 1
-            case 'D' | 'G':
-                return 2
-            case 'B' | 'C' | 'M' | 'P':
-                return 3
-            case 'F' | 'H' | 'V' | 'W' | 'Y':
-                return 4
-            case 'K':
-                return 5
-            case 'J' | 'X':
-                return 8
-            case _:
-                return 10
 
     def collide_point(self, point: tuple[float]) -> bool:
         return self.collision_poly.contains(Point(point))
@@ -92,15 +75,19 @@ class Tile(pygame.sprite.Sprite):
         '''
         tile_size = self.image.get_width()
         hexagon = pygame.Surface((tile_size, tile_size))
-        hexagon.fill(self.bg_color)
+        hexagon.fill(dark_gray)
 
         # Draw border hexagon
         if self.selected:
             self.border_color = green
-            self.text_color = green
         else:
-            self.border_color = yellow if self.marked else light_gray
-            self.text_color = light_gray
+            if self.marked:
+                self.border_color = yellow
+            elif self.type == 2:
+                self.border_color = teal
+            else:
+                self.border_color = light_gray
+
         points = self.calculate_hexagon_points(
             center_x=tile_size / 2, center_y=tile_size / 2,
             radius=tile_size / 2 - 4)
@@ -121,11 +108,28 @@ class Tile(pygame.sprite.Sprite):
 
         return hexagon
 
+    def lookup_letter_value(self, letter: str) -> int:
+        match letter:
+            case 'A' | 'E' | 'I' | 'L' | 'N' | 'O' | 'R' | 'S' | 'T' | 'U':
+                return 1 * self.type
+            case 'D' | 'G':
+                return 2 * self.type
+            case 'B' | 'C' | 'M' | 'P':
+                return 3 * self.type
+            case 'F' | 'H' | 'V' | 'W' | 'Y':
+                return 4 * self.type
+            case 'K':
+                return 5 * self.type
+            case 'J' | 'X':
+                return 8 * self.type
+            case _:
+                return 10 * self.type
+
     def move_toward_target(self) -> None:
         if self.rect.y < self.target_y:
             self.ay += .35
             self.rect.move_ip((0, self.ay))
-        if self.rect.y > self.target_y:
+        if self.rect.y >= self.target_y:
             self.ay = 0
             self.rect.y = self.target_y
 
@@ -141,6 +145,7 @@ class Tile(pygame.sprite.Sprite):
     def scramble(self) -> None:
         self.deselect()
         self.marked = False
+        self.set_type(1)
         self.choose_letter()
         self.update()
 
@@ -154,6 +159,10 @@ class Tile(pygame.sprite.Sprite):
             point_y = point[1] + self.rect.y
             updated_points.append((point_x, point_y))
         self.collision_poly = Polygon(updated_points)
+
+    def set_type(self, tile_type: int) -> None:
+        self.type = tile_type
+        self.text_color = teal if tile_type == 2 else light_gray
 
     def update(self) -> None:
         self.image = self.draw_poly_and_set_collision()

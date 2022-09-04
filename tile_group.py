@@ -1,3 +1,5 @@
+from random import choice
+
 import pygame
 
 from tile import Tile
@@ -7,6 +9,17 @@ class TileGroup(pygame.sprite.Group):
     def __init__(self, num_columns: int) -> None:
         super().__init__()
         self.num_columns = num_columns
+
+    @staticmethod
+    def roll_for_special_type(word_length: int) -> int:
+        if word_length < 5:
+            return 99
+
+        d20 = choice(range(20)) + 1
+        if d20 >= 7 * word_length - pow(word_length - 1, 2):
+            return choice(range(word_length))
+        else:
+            return 99
 
     def deselect(self) -> None:
         for tile in self.sprites():
@@ -28,7 +41,7 @@ class TileGroup(pygame.sprite.Group):
         '''
         return all([t.rect.y == t.target_y for t in self.sprites()])
 
-    def remove_selected(self) -> None:
+    def remove_selected(self, word_length: int) -> None:
         '''
         Counts the number of tiles in each column,
         sets these tiles' Y positions up off the
@@ -41,8 +54,11 @@ class TileGroup(pygame.sprite.Group):
         the tiles above these, allowing them to
         drop down to their correct positions.
         '''
+        crystal_tile_index = self.roll_for_special_type(word_length)
+
         selected_tiles_by_column = [0 for _ in range(self.num_columns)]
-        for tile in [t for t in self.sprites() if t.selected]:
+        for index, tile in enumerate(
+            [t for t in self.sprites() if t.selected]):
             for tile_above in self.get_tiles_above_tile(tile):
                 if not tile_above.selected:
                     tile_above.target_y += tile_above.rect.h - 8
@@ -50,6 +66,8 @@ class TileGroup(pygame.sprite.Group):
             selected_tiles_by_column[tile.column] += 1
             tile.remove(y_offset=selected_tiles_by_column[tile.column])
             tile.target_y = tile.rect.h / 2 - 6 if tile.column % 2 else -2
+            if index == crystal_tile_index:
+                tile.set_type(2)
 
     def scramble(self) -> None:
         for tile in self.sprites():

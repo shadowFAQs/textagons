@@ -95,14 +95,42 @@ class Textfield(pygame.sprite.Sprite):
 
 class UIGroup(pygame.sprite.Group):
 
-    def __init__(self):
+    def __init__(self, fonts: list[pygame.font.Font]):
         super().__init__()
 
-    def post_init(self) -> Textfield:
-        '''
-        Convenience properties to easily access
-        "Current" and "Bonus" word Textfields.
-        '''
+        # Score display
+        self.add(Textfield(label='score_label', font=fonts['small'],
+                           initial_text='Score', align='topright',
+                           offset=(-10, 5), static=True))
+        self.add(Textfield(label='score', font=fonts['bold_sm'],
+                           initial_text=0, align='topright', offset=(-10, 29)))
+        self.add(Textfield(label='score_delta', font=fonts['bold_sm'],
+                           initial_text='', align='topright',
+                           offset=(-75, 1), text_color=green))
+
+        # Bonus word display
+        self.add(Textfield(label='bonus_label', font=fonts['small'],
+                           initial_text='Bonus word', align='topright',
+                           offset=(-10, 71), static=True))
+        self.add(Textfield(label='bonus_word', font=fonts['bold_sm'],
+                           initial_text='', align='topright',
+                           offset=(-10, 95)))
+
+        # Currently selected word
+        self.add(Textfield(label='current_word_label', font=fonts['small'],
+                           initial_text='Current word', align='topright',
+                           offset=(-10, 137), static=True))
+        self.add(Textfield(label='current_word', font=fonts['bold_sm'],
+                           initial_text='', align='topright',
+                           offset=(-10, 161)))
+
+        # Scramble button
+        self.add(Textfield(label='btn_scramble', font=fonts['small'],
+                           initial_text='SCRAMBLE', align='bottomright',
+                           offset=(-10, -10), static=True, draw_border=True))
+
+        # Convenience properties to easily access
+        # "Current" and "Bonus" word Textfields.
         for sprite in self.sprites():
             if sprite.label == 'bonus_word':
                 self.bonus_word = sprite

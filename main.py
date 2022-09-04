@@ -102,45 +102,6 @@ def score_tiles(tiles: list[Tile], bonus_mult: int) -> int:
     return sum([t.value for t in tiles]) * len(tiles) * bonus_mult
 
 
-def setup_ui(fonts: list[pygame.font.Font]) -> UIGroup:
-    ui_group = UIGroup()
-
-    # Score display
-    ui_group.add(Textfield(label='score_label', font=fonts['small'],
-                           initial_text='Score', align='topright',
-                           offset=(-10, 5), static=True))
-    ui_group.add(Textfield(label='score', font=fonts['bold_sm'],
-                           initial_text=0, align='topright', offset=(-10, 29)))
-    ui_group.add(Textfield(label='score_delta', font=fonts['bold_sm'],
-                           initial_text='', align='topright',
-                           offset=(-75, 1), text_color=green))
-
-    # Bonus word display
-    ui_group.add(Textfield(label='bonus_label', font=fonts['small'],
-                           initial_text='Bonus word', align='topright',
-                           offset=(-10, 71), static=True))
-    ui_group.add(Textfield(label='bonus_word', font=fonts['bold_sm'],
-                           initial_text=BONUS_WORD, align='topright',
-                           offset=(-10, 95)))
-
-    # Currently selected word
-    ui_group.add(Textfield(label='current_word_label', font=fonts['small'],
-                           initial_text='Current word', align='topright',
-                           offset=(-10, 137), static=True))
-    ui_group.add(Textfield(label='current_word', font=fonts['bold_sm'],
-                           initial_text='', align='topright',
-                           offset=(-10, 161)))
-
-    # Scramble button
-    ui_group.add(Textfield(label='btn_scramble', font=fonts['small'],
-                           initial_text='SCRAMBLE', align='bottomright',
-                           offset=(-10, -10), static=True, draw_border=True))
-
-    ui_group.post_init()
-
-    return ui_group
-
-
 def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
                           selected: list[Tile],
                           ui_group: UIGroup) -> list[Tile]:
@@ -158,7 +119,7 @@ def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
                     delta = score_tiles(selected, bonus_mult)
                     SCORE += delta
                     ui_group.show_score_delta(delta=str(delta))
-                    tiles.remove_selected()
+                    tiles.remove_selected(word_length=len(word))
                     return []
                 else:
                     tiles.deselect()
@@ -190,11 +151,10 @@ def main() -> None:
     screen = pygame.display.set_mode(screen_dims)
     clock = pygame.time.Clock()
 
-    bg_color = dark_gray
     fonts = get_fonts()
 
     load_dictionary()
-    ui_group = setup_ui(fonts)
+    ui_group = UIGroup(fonts)
     choose_new_bonus_word(ui_group)
 
     tile_size = 64
@@ -210,7 +170,7 @@ def main() -> None:
                       row * tile_size - row * 8 + y_offset)
             tiles.add(
                 Tile(tile_size=tile_size, coords=coords, column=col,
-                     bg_color=bg_color, fonts=fonts))
+                     fonts=fonts))
 
     running = True
     while running:
@@ -246,7 +206,7 @@ def main() -> None:
                             if clicked_sprite.label == 'btn_scramble':
                                 selected_tiles = []
 
-        screen.fill(bg_color)
+        screen.fill(dark_gray)
 
         tiles.update()
         for tile in tiles:

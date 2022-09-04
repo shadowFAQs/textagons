@@ -155,7 +155,8 @@ class Tile(pygame.sprite.Sprite):
     def scramble(self) -> None:
         self.deselect()
         self.marked = False
-        self.choose_letter()
+        if not self.type == 0:  # Fire tiles can't be scrambled away
+            self.choose_letter()
 
         if self.type == 2:
             self.set_type(1)

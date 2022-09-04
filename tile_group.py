@@ -135,10 +135,9 @@ class TileGroup(pygame.sprite.Group):
         else:
             fire_tile_index = 99
 
-        selected = self.selected()
         bypassed_fire_tiles = []
 
-        for index, tile in enumerate(selected):
+        for index, tile in enumerate(self.selected()):
             for tile_above in self.get_tiles_above_tile(tile):
                 self.move_tile_target(tile_above, 1)
             tiles_above = self.get_tiles_above_tile(tile)
@@ -153,11 +152,9 @@ class TileGroup(pygame.sprite.Group):
                 tile.set_type(2)
             elif index == fire_tile_index:
                 tile.set_type(0)
+                bypassed_fire_tiles.append(tile)
 
-        for fire_tile in self.fire_tiles():
-            if not fire_tile in bypassed_fire_tiles:
-                if self.will_burn_down(fire_tile, selected):
-                    fire_tile.burn_ready = True
+        self.set_fire_tiles_ready(bypassed_fire_tiles)
 
     def remove_tile(self, tile: Tile) -> None:
         tile.remove()
@@ -167,14 +164,30 @@ class TileGroup(pygame.sprite.Group):
             tile.rect.move_ip((0, -16))
             tile.target_y = tile.rect.h / 2 - 6 if tile.column % 2 else -2
 
+    def scramble(self) -> None:
+        for tile in self.sprites():
+            tile.scramble()
+
+        top_row_tiles = [t for t in self.sprites() \
+                         if not self.get_tiles_above_tile(t)]
+        bypassed = []
+        if choice(range(10)) >= 2:
+            fire_tile = top_row_tiles[choice(range(len(top_row_tiles)))]
+            fire_tile.set_type(0)
+            bypassed = [fire_tile]
+
+        self.set_fire_tiles_ready(bypassed=bypassed)
+
     def selected(self) -> None:
         return [t for t in self.sprites() if t.selected]
 
-    def scramble(self) -> None:
-        # TODO: Add roll for fire tile
-        # TODO: Keep current fire tiles
-        for tile in self.sprites():
-            tile.scramble()
+    def set_fire_tiles_ready(self, bypassed: list[Tile] | None = None) -> None:
+        bypassed = [] if bypassed is None else bypassed
+
+        for fire_tile in self.fire_tiles():
+            if not fire_tile in bypassed:
+                if self.will_burn_down(fire_tile, self.selected()):
+                    fire_tile.burn_ready = True
 
     def update(self) -> None:
         for fire_tile in self.fire_tiles():

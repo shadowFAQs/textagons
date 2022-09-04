@@ -11,11 +11,10 @@ This is a Pygame implementation of the classic Flash game "Bookworm" by PopCap. 
 * Only 1 bonus tile type: blue/crystal. Find a word of five letters or more for a chance to create one; the longer the word, the better the chance (5: 10% ... >=9: 100%).
 
 ### Thanks to
-* Burak Karaca on ArtStation for [inspiration](https://www.artstation.com/artwork/Lemkll)
+* Burak Karaca on ArtStation for [UI inspiration](https://www.artstation.com/artwork/Lemkll)
 * Johan Aakerlund for [the "Comfortaa" font](https://www.dafont.com/comfortaa.font)
 
 ### TODO
-* Add fire tiles & logic
 * "Clear all marked" button
 * Click-and-drag to select tiles, release to submit
 * Show word history?

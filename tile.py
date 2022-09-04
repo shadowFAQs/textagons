@@ -30,8 +30,12 @@ class Tile(pygame.sprite.Sprite):
         self.column = column
         self.ay = 0
         self.border_color = light_gray
+        self.burn_ready = False
         self.collision_poly = None
         self.fill_color = dark_gray
+        self.flash_fire = False
+        self.flash_timer = 0
+        self.flash_timer_max = 5
         self.marked = False
         self.selected = False
         self.target_y = self.rect.y
@@ -109,6 +113,10 @@ class Tile(pygame.sprite.Sprite):
         return hexagon
 
     def lookup_letter_value(self, letter: str) -> int:
+        '''
+        Crystal tiles are worth 2x normal value.
+        Fire tiles are always worth 0 points.
+        '''
         match letter:
             case 'A' | 'E' | 'I' | 'L' | 'N' | 'O' | 'R' | 'S' | 'T' | 'U':
                 return 1 * self.type
@@ -133,20 +141,25 @@ class Tile(pygame.sprite.Sprite):
             self.ay = 0
             self.rect.y = self.target_y
 
-    def remove(self, y_offset: float) -> None:
+    def remove(self) -> None:
         '''
         Resets tile state, chooses a new letter,
         and moves up off the top of the screen.
         '''
         self.rect.move_ip(
-            (0, self.rect.y * -1 - self.rect.h * y_offset))
+            (0, self.rect.y * -1 - self.rect.h))
+        self.set_type(1)
+        self.burn_ready = False
         self.scramble()
 
     def scramble(self) -> None:
         self.deselect()
         self.marked = False
-        self.set_type(1)
         self.choose_letter()
+
+        if self.type == 2:
+            self.set_type(1)
+
         self.update()
 
     def select(self) -> None:
@@ -162,18 +175,32 @@ class Tile(pygame.sprite.Sprite):
 
     def set_type(self, tile_type: int) -> None:
         self.type = tile_type
-        self.text_color = teal if tile_type == 2 else light_gray
+
+        match tile_type:
+            case 0:
+                self.text_color = red
+            case 1:
+                self.text_color = light_gray
+            case 2:
+                self.text_color = teal
 
     def update(self) -> None:
         self.image = self.draw_poly_and_set_collision()
 
+        if self.type == 0 and self.flash_fire:
+            self.flash_timer += 1
+            if self.flash_timer == self.flash_timer_max:
+                self.flash_timer = 0
+                self.text_color = red \
+                    if self.text_color == yellow else yellow
+
         # Smaller font for "Qu" tiles
         if self.letter == 'Qu':
-            rendered = self.fonts['bold_sm'].render(
-                self.letter, True, self.text_color)
+            rendered = self.fonts['bold_sm'].render(self.letter, True,
+                                                    self.text_color)
         else:
-            rendered = self.fonts['bold'].render(
-                self.letter, True, self.text_color)
+            rendered = self.fonts['bold'].render(self.letter, True,
+                                                 self.text_color)
 
         tile_size = self.image.get_width()
         center_x = tile_size / 2 - rendered.get_width() / 2
@@ -185,5 +212,3 @@ class Tile(pygame.sprite.Sprite):
     def toggle_mark(self) -> None:
         if not self.selected:
             self.marked = not self.marked
-
-

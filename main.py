@@ -37,6 +37,7 @@ R_VALUES = [0, 0, 0, 0.16, 0.22, 0.28, 0.36, 0.42, 0.48, 0.55, 0.61, 0.68,
 
 
 def check_word_against_dictionaty(word: str) -> bool:
+    return True
     return word.lower() in DICTIONARY
 
 

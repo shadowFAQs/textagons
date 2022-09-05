@@ -6214,7 +6214,6 @@ bioethics,0.55
 biofeedback,0.63
 biofilm,0.37
 biofilms,0.42
-biog,0.22
 biographer,0.59
 biographers,0.64
 biographic,0.52
@@ -6222,7 +6221,6 @@ biographical,0.65
 biographically,0.71
 biographies,0.67
 biography,0.43
-biol,0.23
 biologic,0.45
 biological,0.58
 biologically,0.64
@@ -37500,6 +37498,7 @@ koans,0.29
 kohl,0.15
 kohlrabi,0.41
 kohlrabies,0.58
+koi,0.16
 kola,0.22
 kolas,0.27
 kook,0.18

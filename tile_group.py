@@ -21,16 +21,28 @@ class TileGroup(pygame.sprite.Group):
 
         * Words shorter than 5 letters never
         produce a crystal tile.
-        * 5-letter words have a 10% chance to
+        * 5-letter words have a 20% chance to
         produce a crystal tile, up to 100% for
         words 9 letters or longer.
 
         '''
+
         if word_length < 5:
             return 99
 
-        d20 = choice(range(20)) + 1
-        if d20 >= 7 * word_length - pow(word_length - 1, 2):
+        match word_length:
+            case 5:
+                roll_target = 17
+            case 6:
+                roll_target = 10
+            case 7:
+                roll_target = 6
+            case 8:
+                roll_target = 3
+            case _:
+                return choice(range(word_length))
+
+        if choice(range(20)) + 1 >= roll_target:
             return choice(range(word_length))
         else:
             return 99
@@ -128,7 +140,7 @@ class TileGroup(pygame.sprite.Group):
         submitted a bonus word (is_bonus).
         '''
         crystal_tile_index = self.roll_for_crystal_tile(word_length)
-        if crystal_tile_index == 99 or not is_bonus:
+        if crystal_tile_index == 99 and not is_bonus:
             fire_tile_index = self.roll_for_fire_tile(word_length)
         else:
             fire_tile_index = 99
@@ -150,7 +162,7 @@ class TileGroup(pygame.sprite.Group):
                 tile.set_type(0)
                 bypassed_fire_tiles.append(tile)
 
-        self.set_fire_tiles_ready(bypassed_fire_tiles)
+        self.set_fire_tiles_ready(bypassed=bypassed_fire_tiles)
 
     def remove_tile(self, tile: Tile) -> None:
         tile.remove()

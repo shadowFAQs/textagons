@@ -3,12 +3,66 @@ import pygame
 from assets.colors import *
 
 
+class Menu(pygame.sprite.Sprite):
+
+    def __init__(self, label: str, dimensions: tuple[int],
+        offset: tuple[float]) -> None:
+        super().__init__()
+
+        self.label = label
+        self.dimensions = dimensions
+        self.offset = offset
+
+        self.image = pygame.Surface(dimensions)
+        self.rect = self.image.get_rect(topleft=offset)
+
+        self.elements = []
+
+    def add_button(self, text: str, coords: tuple[int],
+                   font=pygame.font.Font,
+                   color: pygame.Color=light_gray) -> None:
+        text_surf = font.render(text, True, color)
+        element = {
+            'image': pygame.Surface(
+                (text_surf.get_width() + 8, text_surf.get_height() + 8))
+        }
+        element['image'].fill(dark_gray)
+        element['image'].blit(text_surf, (4, 5))
+        element['rect'] = element['image'].get_rect(bottomleft=coords)
+        border = pygame.Rect(0, 0, element['rect'].w, element['rect'].h)
+        pygame.draw.rect(element['image'], color, border, width=1,
+                         border_radius=2)
+
+        self.elements.append(element)
+
+    def add_centered_text(self, text: str, menu_dims: tuple[int],
+                 font: pygame.font.Font,
+                 color: pygame.Color=light_gray) -> None:
+        element = {
+            'image': font.render(text, True, color)
+        }
+        coords = (menu_dims[0] / 2 - element['image'].get_width() / 2, 20)
+        element['rect'] = element['image'].get_rect(topleft=coords)
+
+        self.elements.append(element)
+
+    def update(self) -> None:
+        self.image.fill(dark_gray)
+        border = pygame.Rect(0, 0, self.rect.w, self.rect.h)
+        pygame.draw.rect(self.image, light_gray, border, width=1)
+
+        for element in self.elements:
+            self.image.blit(element['image'], (element['rect'].x,
+                                               element['rect'].y))
+
+
 class Textfield(pygame.sprite.Sprite):
 
     def __init__(self, label: str, font: pygame.font.Font, initial_text: str,
                  align: str, offset: tuple[float],
                  text_color: pygame.Color=light_gray,
-                 static: bool=False, draw_border: bool=False) -> None:
+                 static: bool=False, draw_border: bool=False,
+                 border_color: pygame.Color=light_gray) -> None:
         super().__init__()
 
         self.label = label
@@ -18,6 +72,7 @@ class Textfield(pygame.sprite.Sprite):
         self.default_text_color = text_color
         self.static = static
         self.draw_border = draw_border
+        self.border_color = border_color
         self.buffer_text = None
         self.flash_timer = 0
         self.flash_timer_max = 120
@@ -106,8 +161,8 @@ class Textfield(pygame.sprite.Sprite):
         self.set_alignment_and_rect(self.align, self.offset)
 
         if self.draw_border:
-            rect = pygame.Rect(0, 0, self.rect.w, self.rect.h)
-            pygame.draw.rect(self.image, light_gray, rect, width=1,
+            border = pygame.Rect(0, 0, self.rect.w, self.rect.h)
+            pygame.draw.rect(self.image, self.border_color, border, width=1,
                              border_radius=2)
 
 
@@ -145,12 +200,18 @@ class UIGroup(pygame.sprite.Group):
         # Unmark button
         self.add(Textfield(label='btn_unmark', font=fonts['small'],
                            initial_text='UNMARK', align='bottomright',
-                           offset=(-10, -48), static=True, draw_border=True))
+                           offset=(-10, -86), static=True, draw_border=True))
 
         # Scramble button
         self.add(Textfield(label='btn_scramble', font=fonts['small'],
                            initial_text='SCRAMBLE', align='bottomright',
-                           offset=(-10, -10), static=True, draw_border=True))
+                           offset=(-10, -48), static=True, draw_border=True))
+
+        # Restart button
+        self.add(Textfield(label='btn_restart', font=fonts['small'],
+                           initial_text='RESTART', align='bottomright',
+                           offset=(-10, -10), text_color=red, static=True,
+                           draw_border=True, border_color=red))
 
         # Convenience properties to easily access
         # "Current" and "Bonus" word Textfields.
@@ -175,6 +236,26 @@ class UIGroup(pygame.sprite.Group):
                      if s.label == 'score_delta'][0]
         textfield.set_text(f'+{delta}')
         textfield.flash_and_clear(green)
+
+    def show_start_menu(self, fonts: list[pygame.font.Font],
+                        restart: bool=False) -> None:
+        dimensions = (261, 150)
+        self.add(Menu(label='start_menu', dimensions=dimensions,
+                      offset=(55, 132)))
+        start_menu = self.start_menu()
+        start_menu.add_centered_text(
+            text=f'{"Res" if restart else "S"}tart game?',
+            font=fonts['bold_sm'], menu_dims=dimensions)
+        start_menu.add_button(text='YES', coords=(70, 112),
+                              font=fonts['small'], color=red)
+        start_menu.add_button(text='NO', coords=(155, 112),
+                              font=fonts['small'])
+
+    def start_menu(self) -> Menu | None:
+        try:
+            return [s for s in self.sprites() if s.label == 'start_menu'][0]
+        except IndexError:
+            return None
 
     def update_textfield_by_label(self, label: str, text: str) -> None:
         textfield = [s for s in self.sprites() if s.label == label][0]

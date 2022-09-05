@@ -208,6 +208,10 @@ def main() -> None:
                                 selected_tiles = []
                             elif clicked_sprite.label == 'btn_unmark':
                                 tiles.unmark()
+                            elif clicked_sprite.label == 'btn_restart':
+                                click_enabled = False
+                                ui_group.show_start_menu(fonts=fonts,
+                                                         restart=True)
 
         screen.fill(dark_gray)
 

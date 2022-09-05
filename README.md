@@ -15,7 +15,6 @@ This is a Pygame implementation of the classic Flash game "Bookworm" by PopCap. 
 * Johan Aakerlund for [the "Comfortaa" font](https://www.dafont.com/comfortaa.font)
 
 ### TODO
-* "Clear all marked" button
 * Click-and-drag to select tiles, release to submit
 * Show word history?
 * Show best/longest word?

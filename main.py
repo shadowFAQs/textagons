@@ -206,6 +206,8 @@ def main() -> None:
                                 ui_group.clear_text('current_word')
                                 tiles.scramble()
                                 selected_tiles = []
+                            elif clicked_sprite.label == 'btn_unmark':
+                                tiles.unmark()
 
         screen.fill(dark_gray)
 

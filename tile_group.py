@@ -219,3 +219,7 @@ class TileGroup(pygame.sprite.Group):
             return tile_below.type == 1
         else:
             return True
+
+    def unmark(self) -> None:
+        for tile in self.sprites():
+            tile.marked = False

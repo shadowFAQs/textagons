@@ -142,6 +142,11 @@ class UIGroup(pygame.sprite.Group):
                            initial_text='', align='topright',
                            offset=(-10, 161)))
 
+        # Unmark button
+        self.add(Textfield(label='btn_unmark', font=fonts['small'],
+                           initial_text='UNMARK', align='bottomright',
+                           offset=(-10, -48), static=True, draw_border=True))
+
         # Scramble button
         self.add(Textfield(label='btn_scramble', font=fonts['small'],
                            initial_text='SCRAMBLE', align='bottomright',

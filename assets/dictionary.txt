@@ -62062,8 +62062,11 @@ sights,0.3
 sightseeing,0.72
 sightseer,0.6
 sightseers,0.65
+sigil,0.29
+sigils,0.34
 sigma,0.29
 sigmas,0.34
+sigmoid,0.47
 sign,0.23
 signage,0.47
 signal,0.36

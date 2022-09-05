@@ -157,7 +157,7 @@ class TileGroup(pygame.sprite.Group):
 
         while len(pygame.sprite.spritecollide(
             tile, self.sprites(), dokill=False)) > 1:
-            tile.rect.move_ip((0, -16))
+            tile.rect.move_ip((0, -32))
 
     def scramble(self) -> None:
         for tile in self.bottom_row():

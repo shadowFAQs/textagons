@@ -36743,6 +36743,10 @@ jolter,0.37
 jolters,0.42
 jolting,0.37
 jolts,0.24
+jones,0.19
+jonesed,0.34
+joneses,0.34
+jonesing,0.38
 jonquil,0.33
 jonquils,0.38
 josh,0.16
@@ -61462,6 +61466,8 @@ shifts,0.29
 shifty,0.26
 shiitake,0.53
 shiitakes,0.58
+shiksa,0.4
+shiksas,0.45
 shill,0.24
 shilled,0.4
 shillelagh,0.54
@@ -75182,6 +75188,7 @@ vowels,0.33
 vowing,0.3
 vows,0.17
 vox,0.11
+voxel,0.29
 voxes,0.28
 voyage,0.36
 voyaged,0.4

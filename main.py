@@ -72,19 +72,12 @@ def get_clicked_sprite(
 
 def handle_left_mouse_down(
     ui_group: UIGroup, tiles: TileGroup,
-    selected: list[Tile]) -> Textfield | Tile:
+    selected: list[Tile]) -> Textfield | Tile | None:
     button = get_clicked_sprite(ui_group)
     if button:
-        match button.label:
-            case 'btn_scramble':
-                ui_group.clear_text('current_word')
-                tiles.scramble()
         return button
 
-    tile = get_clicked_sprite(tiles)
-    if tile:
-        return tile
-
+    return get_clicked_sprite(tiles)
 
 def load_dictionary() -> None:
     global DICTIONARY
@@ -208,7 +201,10 @@ def main() -> None:
                             ui_group.update_textfield_by_label(label='score',
                                                                text=SCORE)
                         elif type(clicked_sprite) == Textfield:
-                            if clicked_sprite.label == 'btn_scramble':
+                            if clicked_sprite.label == 'btn_scramble' \
+                                and tiles_ready:
+                                ui_group.clear_text('current_word')
+                                tiles.scramble()
                                 selected_tiles = []
 
         screen.fill(dark_gray)

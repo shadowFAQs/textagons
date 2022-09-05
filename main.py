@@ -119,7 +119,8 @@ def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
                     delta = score_tiles(selected, bonus_mult)
                     SCORE += delta
                     ui_group.show_score_delta(delta=str(delta))
-                    tiles.remove_selected(word_length=len(word))
+                    tiles.remove_selected(word_length=len(word),
+                                          is_bonus=bonus_mult == 3)
                     return []
                 else:
                     tiles.deselect()
@@ -228,4 +229,3 @@ if __name__ == '__main__':
 
 # TODO:
 # 1. Tiles are still falling through others with complex fire tile drops & burns
-# 2. You shouldn't get another fire tile if you make the bonus word

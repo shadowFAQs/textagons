@@ -111,7 +111,7 @@ class TileGroup(pygame.sprite.Group):
     def move_tile_target(self, tile: Tile, offset: int) -> None:
         tile.target_y += (tile.rect.h - 8) * offset
 
-    def remove_selected(self, word_length: int) -> None:
+    def remove_selected(self, word_length: int, is_bonus: bool) -> None:
         '''
         Counts the number of tiles in each column,
         sets these tiles' Y positions up off the
@@ -127,10 +127,12 @@ class TileGroup(pygame.sprite.Group):
         Finally, we check word_length to see if
         special tile types should be created. A
         crystal tile and a fire tile will not be
-        created at the same time.
+        created at the same time. A fire tile
+        will not be created if the player just
+        submitted a bonus word (is_bonus).
         '''
         crystal_tile_index = self.roll_for_crystal_tile(word_length)
-        if crystal_tile_index == 99:
+        if crystal_tile_index == 99 or not is_bonus:
             fire_tile_index = self.roll_for_fire_tile(word_length)
         else:
             fire_tile_index = 99

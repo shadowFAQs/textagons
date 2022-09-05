@@ -160,6 +160,9 @@ class TileGroup(pygame.sprite.Group):
             tile.rect.move_ip((0, -16))
 
     def scramble(self) -> None:
+        for tile in self.bottom_row():
+            tile.rect.y -= 8
+
         for tile in self.sprites():
             tile.scramble()
 

@@ -210,7 +210,6 @@ def main() -> None:
                         elif type(clicked_sprite) == Textfield:
                             if clicked_sprite.label == 'btn_scramble':
                                 selected_tiles = []
-                                click_enabled = False
 
         screen.fill(dark_gray)
 

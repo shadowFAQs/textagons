@@ -66,11 +66,29 @@ class Textfield(pygame.sprite.Sprite):
             topleft=(screen_offset_x + offset[0],
                      screen_offset_y + offset[1]))
 
-    def set_text(self, text: str | int) -> None:
+    def set_text(self, text: str | int, max_size: int = 99) -> None:
+        '''
+        Converts { text } to a str, truncates it
+        if it's longer than 9 characters, and
+        displays it.
+
+        The "current word" textfield retains its
+        text for a couple seconds after it's
+        cleared so it can flash red to show that
+        the entry wasn't in the dictionary. To
+        allow for this, the new (empty) string is
+        temporarily stored in { buffer_text }
+        until { flash_timer } expires.
+        '''
+        text = str(text)
+
+        if len(text) > max_size:
+            text = f'{text[:3]}...{text[-3:]}'
+
         if self.label == 'current_word' and self.flash_timer:
             self.buffer_text = text
         else:
-            self.text = str(text)
+            self.text = text
         self.update()
 
     def update(self) -> None:

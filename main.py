@@ -199,7 +199,8 @@ def main() -> None:
                                 clicked_sprite, tiles, selected_tiles,
                                 ui_group)
                             ui_group.current_word.set_text(
-                                get_word_from_tiles(selected_tiles))
+                                get_word_from_tiles(selected_tiles),
+                                max_size=8)
                             ui_group.update_textfield_by_label(label='score',
                                                                text=SCORE)
                         elif type(clicked_sprite) == Textfield:
@@ -228,4 +229,3 @@ if __name__ == '__main__':
 # TODO:
 # 1. Tiles are still falling through others with complex fire tile drops & burns
 # 2. You shouldn't get another fire tile if you make the bonus word
-# 3. Display long words

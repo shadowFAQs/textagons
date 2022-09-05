@@ -151,6 +151,9 @@ def main() -> None:
     screen_dims = (SCREEN_WIDTH, SCREEN_HEIGHT)
     screen = pygame.display.set_mode(screen_dims)
     clock = pygame.time.Clock()
+    click_enabled = True
+    tiles_ready = True
+
 
     fonts = get_fonts()
 
@@ -177,15 +180,15 @@ def main() -> None:
     while running:
         clock.tick(60)
 
-        tile_click_enabled = tiles.is_all_at_target()
+        tiles_ready = tiles.is_all_at_target()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if tile_click_enabled:
+                if click_enabled:
 
-                    if event.button == 3:  # Right click
+                    if event.button == 3 and tiles_ready:  # Right click
                         tile = get_clicked_sprite(tiles)
                         if tile:
                             tile.toggle_mark()
@@ -194,7 +197,7 @@ def main() -> None:
                         clicked_sprite = handle_left_mouse_down(
                             ui_group, tiles, selected_tiles)
 
-                        if type(clicked_sprite) == Tile:
+                        if type(clicked_sprite) == Tile and tiles_ready:
                             ui_group.current_word.kill_flash()
                             selected_tiles = update_selected_tiles(
                                 clicked_sprite, tiles, selected_tiles,
@@ -207,6 +210,7 @@ def main() -> None:
                         elif type(clicked_sprite) == Textfield:
                             if clicked_sprite.label == 'btn_scramble':
                                 selected_tiles = []
+                                click_enabled = False
 
         screen.fill(dark_gray)
 
@@ -226,6 +230,3 @@ if __name__ == '__main__':
     pygame.display.set_caption("Textagons")
 
     main()
-
-# TODO:
-# 1. Tiles are still falling through others with complex fire tile drops & burns

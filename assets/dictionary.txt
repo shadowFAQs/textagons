@@ -36208,7 +36208,6 @@ irrupts,0.38
 ischemia,0.51
 ischemic,0.44
 isinglass,0.55
-isl,0.18
 island,0.37
 islander,0.55
 islanders,0.6
@@ -42351,6 +42350,7 @@ misnames,0.52
 misnaming,0.53
 misnomer,0.52
 misnomers,0.57
+miso,0.3
 misogamist,0.6
 misogamists,0.65
 misogamy,0.42

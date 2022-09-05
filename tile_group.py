@@ -65,14 +65,13 @@ class TileGroup(pygame.sprite.Group):
         else:
             return 99
 
+    def bottom_row(self) -> list[Tile]:
+        return [t for t in self.sprites() if not self.get_tiles_below_tile(t)]
+
     def burn_down(self, fire_tile: Tile) -> None:
         fire_tile.burn_ready = False
 
         if self.get_tiles_below_tile(fire_tile):
-            self.move_tile_target(fire_tile, 1)
-            for tile in self.get_tiles_above_tile(fire_tile):
-                self.move_tile_target(tile, 1)
-
             tiles_below = self.get_tiles_below_tile(fire_tile)
             if tiles_below:
                 self.remove_tile(tiles_below[0])
@@ -108,9 +107,6 @@ class TileGroup(pygame.sprite.Group):
         '''
         return all([t.rect.y == t.target_y for t in self.sprites()])
 
-    def move_tile_target(self, tile: Tile, offset: int) -> None:
-        tile.target_y += (tile.rect.h - 8) * offset
-
     def remove_selected(self, word_length: int, is_bonus: bool) -> None:
         '''
         Counts the number of tiles in each column,
@@ -140,8 +136,6 @@ class TileGroup(pygame.sprite.Group):
         bypassed_fire_tiles = []
 
         for index, tile in enumerate(self.selected()):
-            for tile_above in self.get_tiles_above_tile(tile):
-                self.move_tile_target(tile_above, 1)
             tiles_above = self.get_tiles_above_tile(tile)
             if tiles_above:
                 tile_above = tiles_above[0]
@@ -164,7 +158,6 @@ class TileGroup(pygame.sprite.Group):
         while len(pygame.sprite.spritecollide(
             tile, self.sprites(), dokill=False)) > 1:
             tile.rect.move_ip((0, -16))
-            tile.target_y = tile.rect.h / 2 - 6 if tile.column % 2 else -2
 
     def scramble(self) -> None:
         for tile in self.sprites():
@@ -192,6 +185,8 @@ class TileGroup(pygame.sprite.Group):
                     fire_tile.burn_ready = True
 
     def update(self) -> None:
+        self.update_tile_targets()
+
         for fire_tile in self.fire_tiles():
             fire_tile.flash_fire = not bool(
                 self.get_tiles_below_tile(fire_tile)) and \
@@ -200,6 +195,16 @@ class TileGroup(pygame.sprite.Group):
                 self.burn_down(fire_tile)
 
         super().update()  # Calls update() for all child sprites
+
+    def update_tile_targets(self) -> None:
+        bottom_row = self.bottom_row()
+        for tile in bottom_row:
+            y_offset = tile.rect.h / 2 - 6 if tile.column % 2 else -2
+            tile.target_y = 6 * tile.rect.h - 48 + y_offset
+
+        for tile in [t for t in self.sprites() if t not in bottom_row]:
+            tile.target_y = self.get_tiles_below_tile(tile)[0].rect.y \
+                - (tile.rect.h - 8)
 
     def will_burn_down(self, tile: Tile, selected: list[Tile]) -> bool:
         if not tile.type == 0 or tile in selected:

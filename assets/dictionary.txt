@@ -18951,6 +18951,7 @@ dinners,0.48
 dinnertime,0.73
 dinnerware,0.72
 dinning,0.43
+dino,0.24
 dinosaur,0.51
 dinosaurs,0.56
 dins,0.24
@@ -29699,6 +29700,11 @@ grepped,0.41
 grepping,0.43
 greps,0.28
 grew,0.23
+grey,0.23
+greyed,0.36
+greyer,0.38
+greyest,0.43
+greys,0.25
 greyhound,0.47
 greyhounds,0.52
 gribble,0.38
@@ -44753,7 +44759,6 @@ nominator,0.61
 nominators,0.66
 nominee,0.56
 nominees,0.61
-non,0.2
 nonabrasive,0.74
 nonabsorbent,0.76
 nonabsorbents,0.81

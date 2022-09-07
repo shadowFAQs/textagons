@@ -18,6 +18,10 @@ class Button(pygame.sprite.Sprite):
         self.text_color = color
 
     def collide_point(self, point: tuple[float]) -> bool:
+        '''
+        References self.parent_offset since it's
+        placed inside the Menu sprite.
+        '''
         point_x = point[0] - self.parent_offset[0]
         point_y = point[1] - self.parent_offset[1]
         return self.rect.collidepoint((point_x, point_y))
@@ -166,16 +170,35 @@ class Menu(pygame.sprite.Sprite):
         self.elements.append(Button(label, text, coords, self.offset, font,
                                     color))
 
-    def add_centered_text(self, label: str, text: str, font: pygame.font.Font,
-                          color: pygame.Color=light_gray) -> None:
-        from main import SCREEN_WIDTH
+    def add_multicolor_text(self, text_obj: dict, font: pygame.font.Font,
+                            coords: tuple[int]) -> None:
+        x_offset = 0
+        for index, letter in enumerate(text_obj['letters']):
+            offset = (coords[0] + x_offset, coords[1])
+            self.elements.append(Textfield(
+                label='', font=font, initial_text=letter, align='topleft',
+                offset=offset, text_color=text_obj['colors'][index]))
+            x_offset += self.elements[-1].rect.w
 
+        value_text = f' ({text_obj["value"]} pts)'
+        self.elements.append(Textfield(label='', font=font,
+                                       initial_text=value_text,
+                                       align='topleft',
+                                       offset=(coords[0] + x_offset,
+                                               coords[1])))
+
+    def add_text(self, text: str, coords: tuple[int], font: pygame.font.Font,
+                 color: pygame.Color=light_gray) -> None:
+        self.elements.append(Textfield(label='', font=font, initial_text=text,
+                                       align='topleft', offset=coords))
+
+    def add_centered_text(self, text: str, font: pygame.font.Font,
+                          y_position: int=20,
+                          color: pygame.Color=light_gray) -> None:
         temp = font.render(text, True, color)
-        offset = (SCREEN_WIDTH / 2 - self.rect.w / 2 - temp.get_width() / 2,
-                  20)
-        self.elements.append(Textfield(label=label, font=font,
-                                       initial_text=text, align='topleft',
-                                       offset=offset))
+        offset = (self.rect.w / 2 - temp.get_width() / 2, y_position)
+        self.elements.append(Textfield(label='', font=font, initial_text=text,
+                                       align='topleft', offset=offset))
 
     def buttons(self) -> list[Button]:
         return [e for e in self.elements if isinstance(e, Button)]
@@ -221,6 +244,11 @@ class UIGroup(pygame.sprite.Group):
                            initial_text='', align='topright',
                            offset=(-10, 161)))
 
+        # History
+        self.add(Textfield(label='btn_history', font=fonts['small'],
+                           initial_text='HISTORY', align='bottomright',
+                           offset=(-10, -124), static=True, draw_border=True))
+
         # Unmark button
         self.add(Textfield(label='btn_unmark', font=fonts['small'],
                            initial_text='UNMARK', align='bottomright',
@@ -255,20 +283,60 @@ class UIGroup(pygame.sprite.Group):
                      if s.label == textfield_label][0]
         textfield.flash(flash_color)
 
+    def hide_history(self) -> None:
+        self.remove(self.history())
+
     def hide_restart_menu(self) -> None:
         self.remove(self.restart_menu())
+
+    def history(self) -> Menu | None:
+        try:
+            return [s for s in self.sprites() if s.label == 'history'][0]
+        except IndexError:
+            return None
 
     def menu_buttons(self) -> list[Button]:
         return self.restart_menu().elements
 
-    def show_restart_menu(self, fonts: list[pygame.font.Font],
-                        restart: bool=False) -> None:
+    def restart_menu(self) -> Menu | None:
+        try:
+            return [s for s in self.sprites() if s.label == 'restart_menu'][0]
+        except IndexError:
+            return None
+
+    def show_history(self, longest_word: str, highest_scoring: dict,
+                     fonts: list[pygame.font.Font]) -> None:
+        dimensions = (300, 180)
+        self.add(Menu(label='history', dimensions=dimensions, offset=(40, 119)))
+        history = self.history()
+        history.add_centered_text(text='Word history', font=fonts['bold_sm'],
+                                  y_position=10)
+        history.add_text(text='Longest word', font=fonts['mini'],
+                         coords=(10, 50))
+        if longest_word:
+            history.add_text(text=longest_word, font=fonts['small'],
+                             coords=(25, 66))
+        else:
+            history.add_text(text='...', font=fonts['small'],
+                             coords=(25, 66))
+        history.add_text(text='Highest scoring word', font=fonts['mini'],
+                         coords=(10, 100))
+        if highest_scoring:
+            history.add_multicolor_text(text_obj=highest_scoring,
+                                        font=fonts['small'], coords=(25, 116))
+        else:
+            history.add_text(text='...', font=fonts['small'],
+                             coords=(25, 116))
+        history.add_button(label='close_history', text='CLOSE',
+                           coords=(220, 174), font=fonts['small'])
+
+
+    def show_restart_menu(self, fonts: list[pygame.font.Font]) -> None:
         menu_dimensions = (261, 150)
         self.add(Menu(label='restart_menu', dimensions=menu_dimensions,
                       offset=(55, 132)))
         restart_menu = self.restart_menu()
-        restart_menu.add_centered_text(label='restart_msg',
-                                       text='Restart game?',
+        restart_menu.add_centered_text(text='Restart game?',
                                        font=fonts['bold_sm'])
         restart_menu.add_button(label='restart_yes', text='YES',
                                 coords=(70, 112), font=fonts['small'],
@@ -281,12 +349,6 @@ class UIGroup(pygame.sprite.Group):
                      if s.label == 'score_delta'][0]
         textfield.set_text(f'+{delta}')
         textfield.flash_and_clear(green)
-
-    def restart_menu(self) -> Menu | None:
-        try:
-            return [s for s in self.sprites() if s.label == 'restart_menu'][0]
-        except IndexError:
-            return None
 
     def update_textfield_by_label(self, label: str, text: str) -> None:
         textfield = [s for s in self.sprites() if s.label == label][0]

@@ -31,9 +31,49 @@ BONUS_WORD = ''
 BONUS_WORD_LENGTH = 2
 SCORE = 0
 DICTIONARY = []
+LONGEST = ''
+HIGHEST_SCORING = {}
 WORDS_WITH_R_VALUES = []
 R_VALUES = [0, 0, 0, 0.16, 0.22, 0.28, 0.36, 0.42, 0.48, 0.55, 0.61, 0.68,
             0.74, 0.8, 0.87, 0.93, 0.99, 1.07, 1.13, 1.28, 1.31, 1.38]
+
+
+def add_word_to_history(tiles: list[Tile], score: int, is_bonus: bool) -> None:
+    global LONGEST
+    global HIGHEST_SCORING
+
+    if len(tiles) > len(LONGEST):
+        LONGEST = get_word_from_tiles(tiles)
+
+    if HIGHEST_SCORING:
+        if score > HIGHEST_SCORING['value']:
+            colors = []
+            for tile in tiles:
+                if tile.type == 1:
+                    colors.append(yellow if is_bonus else light_gray)
+                else:
+                    colors.append(tile.text_color)
+
+            entry = {
+                'letters': [t.letter.upper() for t in tiles],
+                'colors': colors,
+                'value': score
+            }
+            HIGHEST_SCORING = entry
+    else:
+        colors = []
+        for tile in tiles:
+            if tile.type == 1:
+                colors.append(yellow if is_bonus else light_gray)
+            else:
+                colors.append(tile.text_color)
+
+        entry = {
+            'letters': [t.letter.upper() for t in tiles],
+            'colors': colors,
+            'value': score
+        }
+        HIGHEST_SCORING = entry
 
 
 def check_word_against_dictionaty(word: str) -> bool:
@@ -59,7 +99,11 @@ def get_word_from_tiles(tiles: list[Tile]) -> str:
 def get_clicked_menu_button(group: UIGroup) -> Button | None:
     mouse_pos = pygame.mouse.get_pos()
 
-    buttons_iter = iter(group.restart_menu().buttons())
+    try:
+        buttons_iter = iter(group.restart_menu().buttons())
+    except AttributeError:
+        buttons_iter = iter(group.history().buttons())
+
     while True:
         try:
             button = next(buttons_iter)
@@ -143,6 +187,8 @@ def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
                     delta = score_tiles(selected, bonus_mult)
                     SCORE += delta
                     ui_group.show_score_delta(delta=str(delta))
+                    add_word_to_history(tiles=selected, score=delta,
+                                        is_bonus=bonus_mult == 3)
                     tiles.remove_selected(word_length=len(word),
                                           is_bonus=bonus_mult == 3)
                     return []
@@ -177,7 +223,6 @@ def main() -> None:
     clock = pygame.time.Clock()
     menu_open = False
     tiles_ready = True
-
 
     fonts = get_fonts()
 
@@ -221,6 +266,8 @@ def main() -> None:
                             restart_game(tiles, ui_group)
                         elif button.label == 'restart_no':
                             ui_group.hide_restart_menu()
+                        elif button.label == 'close_history':
+                            ui_group.hide_history()
                         menu_open = False
                 else:
                     if event.button == 3 and tiles_ready:  # Right click
@@ -243,7 +290,11 @@ def main() -> None:
                             ui_group.update_textfield_by_label(label='score',
                                                                text=SCORE)
                         elif type(clicked_sprite) == Textfield:
-                            if clicked_sprite.label == 'btn_scramble' \
+                            if clicked_sprite.label == 'btn_history':
+                                ui_group.show_history(LONGEST, HIGHEST_SCORING,
+                                                      fonts=fonts)
+                                menu_open = True
+                            elif clicked_sprite.label == 'btn_scramble' \
                                 and tiles_ready:
                                 ui_group.clear_text('current_word')
                                 tiles.scramble()
@@ -252,8 +303,7 @@ def main() -> None:
                                 tiles.unmark()
                             elif clicked_sprite.label == 'btn_restart':
                                 menu_open = True
-                                ui_group.show_restart_menu(fonts=fonts,
-                                                           restart=True)
+                                ui_group.show_restart_menu(fonts=fonts)
 
         screen.fill(dark_gray)
 

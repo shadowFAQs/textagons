@@ -9,6 +9,7 @@ This is a Pygame implementation of the classic Flash game "Bookworm" by PopCap. 
 * A better dictionary.
 * Right click a tile to mark it. This makes it easy to keep track of tiles you want to save for future bonus words.
 * Only 1 bonus tile type: blue/crystal. Find a word of five letters or more for a chance to create one; the longer the word, the better the chance (5: 20% ... >=9: 100%).
+* Click **HISTORY** to see your longest and highest scoring words from the current game.
 
 ### Thanks to
 * Burak Karaca on ArtStation for [UI inspiration](https://www.artstation.com/artwork/Lemkll)
@@ -16,5 +17,4 @@ This is a Pygame implementation of the classic Flash game "Bookworm" by PopCap. 
 
 ### TODO
 * Click-and-drag to select tiles, release to submit
-* Show word history?
-* Show best/longest word?
+* Save & high score list?

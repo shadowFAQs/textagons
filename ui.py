@@ -3,57 +3,36 @@ import pygame
 from assets.colors import *
 
 
-class Menu(pygame.sprite.Sprite):
+class Button(pygame.sprite.Sprite):
 
-    def __init__(self, label: str, dimensions: tuple[int],
-        offset: tuple[float]) -> None:
+    def __init__(self, label: str, text: str, coords: tuple[int],
+                 offset: tuple[float], font: pygame.font.Font,
+                 color: pygame.Color=light_gray) -> None:
         super().__init__()
 
         self.label = label
-        self.dimensions = dimensions
-        self.offset = offset
+        self.text = text
+        self.coords = coords
+        self.parent_offset = offset
+        self.font = font
+        self.text_color = color
 
-        self.image = pygame.Surface(dimensions)
-        self.rect = self.image.get_rect(topleft=offset)
-
-        self.elements = []
-
-    def add_button(self, text: str, coords: tuple[int],
-                   font=pygame.font.Font,
-                   color: pygame.Color=light_gray) -> None:
-        text_surf = font.render(text, True, color)
-        element = {
-            'image': pygame.Surface(
-                (text_surf.get_width() + 8, text_surf.get_height() + 8))
-        }
-        element['image'].fill(dark_gray)
-        element['image'].blit(text_surf, (4, 5))
-        element['rect'] = element['image'].get_rect(bottomleft=coords)
-        border = pygame.Rect(0, 0, element['rect'].w, element['rect'].h)
-        pygame.draw.rect(element['image'], color, border, width=1,
-                         border_radius=2)
-
-        self.elements.append(element)
-
-    def add_centered_text(self, text: str, menu_dims: tuple[int],
-                 font: pygame.font.Font,
-                 color: pygame.Color=light_gray) -> None:
-        element = {
-            'image': font.render(text, True, color)
-        }
-        coords = (menu_dims[0] / 2 - element['image'].get_width() / 2, 20)
-        element['rect'] = element['image'].get_rect(topleft=coords)
-
-        self.elements.append(element)
+    def collide_point(self, point: tuple[float]) -> bool:
+        point_x = point[0] - self.parent_offset[0]
+        point_y = point[1] - self.parent_offset[1]
+        return self.rect.collidepoint((point_x, point_y))
 
     def update(self) -> None:
+        text_surf = self.font.render(self.text, True, self.text_color)
+        self.image = pygame.Surface((text_surf.get_width() + 8,
+                                     text_surf.get_height() + 8))
         self.image.fill(dark_gray)
-        border = pygame.Rect(0, 0, self.rect.w, self.rect.h)
-        pygame.draw.rect(self.image, light_gray, border, width=1)
+        self.rect = self.image.get_rect(bottomleft=self.coords)
 
-        for element in self.elements:
-            self.image.blit(element['image'], (element['rect'].x,
-                                               element['rect'].y))
+        border = pygame.Rect(0, 0, self.rect.w, self.rect.h)
+        pygame.draw.rect(self.image, self.text_color, border, width=1,
+                         border_radius=2)
+        self.image.blit(text_surf, (4, 5))
 
 
 class Textfield(pygame.sprite.Sprite):
@@ -166,6 +145,51 @@ class Textfield(pygame.sprite.Sprite):
                              border_radius=2)
 
 
+class Menu(pygame.sprite.Sprite):
+
+    def __init__(self, label: str, dimensions: tuple[int],
+        offset: tuple[float]) -> None:
+        super().__init__()
+
+        self.label = label
+        self.dimensions = dimensions
+        self.offset = offset
+
+        self.image = pygame.Surface(dimensions)
+        self.rect = self.image.get_rect(topleft=offset)
+
+        self.elements = []
+
+    def add_button(self, label: str, text: str, coords: tuple[int],
+                   font: pygame.font.Font,
+                   color: pygame.Color=light_gray) -> None:
+        self.elements.append(Button(label, text, coords, self.offset, font,
+                                    color))
+
+    def add_centered_text(self, label: str, text: str, font: pygame.font.Font,
+                          color: pygame.Color=light_gray) -> None:
+        from main import SCREEN_WIDTH
+
+        temp = font.render(text, True, color)
+        offset = (SCREEN_WIDTH / 2 - self.rect.w / 2 - temp.get_width() / 2,
+                  20)
+        self.elements.append(Textfield(label=label, font=font,
+                                       initial_text=text, align='topleft',
+                                       offset=offset))
+
+    def buttons(self) -> list[Button]:
+        return [e for e in self.elements if isinstance(e, Button)]
+
+    def update(self) -> None:
+        self.image.fill(dark_gray)
+        border = pygame.Rect(0, 0, self.rect.w, self.rect.h)
+        pygame.draw.rect(self.image, light_gray, border, width=1)
+
+        for element in self.elements:
+            element.update()
+            self.image.blit(element.image, (element.rect.x, element.rect.y))
+
+
 class UIGroup(pygame.sprite.Group):
 
     def __init__(self, fonts: list[pygame.font.Font]):
@@ -231,29 +255,36 @@ class UIGroup(pygame.sprite.Group):
                      if s.label == textfield_label][0]
         textfield.flash(flash_color)
 
+    def hide_restart_menu(self) -> None:
+        self.remove(self.restart_menu())
+
+    def menu_buttons(self) -> list[Button]:
+        return self.restart_menu().elements
+
+    def show_restart_menu(self, fonts: list[pygame.font.Font],
+                        restart: bool=False) -> None:
+        menu_dimensions = (261, 150)
+        self.add(Menu(label='restart_menu', dimensions=menu_dimensions,
+                      offset=(55, 132)))
+        restart_menu = self.restart_menu()
+        restart_menu.add_centered_text(label='restart_msg',
+                                       text='Restart game?',
+                                       font=fonts['bold_sm'])
+        restart_menu.add_button(label='restart_yes', text='YES',
+                                coords=(70, 112), font=fonts['small'],
+                                color=red)
+        restart_menu.add_button(label='restart_no', text='NO',
+                                coords=(155, 112), font=fonts['small'])
+
     def show_score_delta(self, delta: str) -> None:
         textfield = [s for s in self.sprites() \
                      if s.label == 'score_delta'][0]
         textfield.set_text(f'+{delta}')
         textfield.flash_and_clear(green)
 
-    def show_start_menu(self, fonts: list[pygame.font.Font],
-                        restart: bool=False) -> None:
-        dimensions = (261, 150)
-        self.add(Menu(label='start_menu', dimensions=dimensions,
-                      offset=(55, 132)))
-        start_menu = self.start_menu()
-        start_menu.add_centered_text(
-            text=f'{"Res" if restart else "S"}tart game?',
-            font=fonts['bold_sm'], menu_dims=dimensions)
-        start_menu.add_button(text='YES', coords=(70, 112),
-                              font=fonts['small'], color=red)
-        start_menu.add_button(text='NO', coords=(155, 112),
-                              font=fonts['small'])
-
-    def start_menu(self) -> Menu | None:
+    def restart_menu(self) -> Menu | None:
         try:
-            return [s for s in self.sprites() if s.label == 'start_menu'][0]
+            return [s for s in self.sprites() if s.label == 'restart_menu'][0]
         except IndexError:
             return None
 

@@ -199,6 +199,10 @@ class TileGroup(pygame.sprite.Group):
                 if self.will_burn_down(fire_tile, self.selected()):
                     fire_tile.burn_ready = True
 
+    def set_type(self, tile_type: int) -> None:
+        for tile in self.sprites():
+            tile.set_type(tile_type)
+
     def update(self) -> None:
         self.update_tile_targets()
 

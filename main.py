@@ -7,7 +7,7 @@ from assets.colors import *
 from assets.fonts import get_fonts
 from tile import Tile
 from tile_group import TileGroup
-from ui import Textfield, UIGroup
+from ui import Textfield, UIGroup, Button
 
 
 '''
@@ -56,6 +56,19 @@ def get_word_from_tiles(tiles: list[Tile]) -> str:
     return ''.join([t.letter for t in tiles]).upper()
 
 
+def get_clicked_menu_button(group: UIGroup) -> Button | None:
+    mouse_pos = pygame.mouse.get_pos()
+
+    buttons_iter = iter(group.restart_menu().buttons())
+    while True:
+        try:
+            button = next(buttons_iter)
+            if button.collide_point(mouse_pos):
+                return button
+        except StopIteration:
+            return None
+
+
 def get_clicked_sprite(
     group: pygame.sprite.Group) -> pygame.sprite.Sprite | None:
     mouse_pos = pygame.mouse.get_pos()
@@ -89,6 +102,24 @@ def load_dictionary() -> None:
             entry = line.split(',')
             DICTIONARY.append(entry[0])
             WORDS_WITH_R_VALUES.append([entry[0], float(entry[1])])
+
+
+def restart_game(tiles: TileGroup, ui_group: UIGroup) -> None:
+    global BONUS_WORD
+    global BONUS_WORD_LENGTH
+    global SCORE
+
+    SCORE = 0
+    BONUS_WORD = ''
+    BONUS_WORD_LENGTH = 2
+    choose_new_bonus_word(ui_group)
+    ui_group.update_textfield_by_label(label='score', text=0)
+
+    tiles.deselect()
+    tiles.scramble()
+    tiles.set_type(1)
+
+    ui_group.hide_restart_menu()
 
 
 def score_tiles(tiles: list[Tile], bonus_mult: int) -> int:
@@ -144,7 +175,7 @@ def main() -> None:
     screen_dims = (SCREEN_WIDTH, SCREEN_HEIGHT)
     screen = pygame.display.set_mode(screen_dims)
     clock = pygame.time.Clock()
-    click_enabled = True
+    menu_open = False
     tiles_ready = True
 
 
@@ -169,6 +200,9 @@ def main() -> None:
                 Tile(tile_size=tile_size, coords=coords, column=col,
                      fonts=fonts))
 
+    tiles.scramble()
+    tiles.set_type(1)
+
     running = True
     while running:
         clock.tick(60)
@@ -179,8 +213,16 @@ def main() -> None:
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if click_enabled:
-
+                if menu_open:
+                    button = get_clicked_menu_button(ui_group)
+                    if button:
+                        if button.label == 'restart_yes':
+                            selected_tiles = []
+                            restart_game(tiles, ui_group)
+                        elif button.label == 'restart_no':
+                            ui_group.hide_restart_menu()
+                        menu_open = False
+                else:
                     if event.button == 3 and tiles_ready:  # Right click
                         tile = get_clicked_sprite(tiles)
                         if tile:
@@ -209,9 +251,9 @@ def main() -> None:
                             elif clicked_sprite.label == 'btn_unmark':
                                 tiles.unmark()
                             elif clicked_sprite.label == 'btn_restart':
-                                click_enabled = False
-                                ui_group.show_start_menu(fonts=fonts,
-                                                         restart=True)
+                                menu_open = True
+                                ui_group.show_restart_menu(fonts=fonts,
+                                                           restart=True)
 
         screen.fill(dark_gray)
 

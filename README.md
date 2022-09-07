@@ -8,7 +8,7 @@ This is a Pygame implementation of the classic Flash game "Bookworm" by PopCap. 
 * Hexagons instead of staggered square tiles. Because BattleTech, probably.
 * A better dictionary.
 * Right click a tile to mark it. This makes it easy to keep track of tiles you want to save for future bonus words.
-* Only 1 bonus tile type: blue/crystal. Find a word of five letters or more for a chance to create one; the longer the word, the better the chance (5: 10% ... >=9: 100%).
+* Only 1 bonus tile type: blue/crystal. Find a word of five letters or more for a chance to create one; the longer the word, the better the chance (5: 20% ... >=9: 100%).
 
 ### Thanks to
 * Burak Karaca on ArtStation for [UI inspiration](https://www.artstation.com/artwork/Lemkll)

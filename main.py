@@ -136,6 +136,17 @@ def handle_left_mouse_down(
 
     return get_clicked_sprite(tiles)
 
+
+def is_valid_word_length(selected_tiles:list[Tile]) -> bool:
+    if len(selected_tiles) > 2:
+        return True
+
+    if len(selected_tiles) == 2 and 'Qu' in [l.letter for l in selected_tiles]:
+        return True
+
+    return False
+
+
 def load_dictionary() -> None:
     global DICTIONARY
     global WORDS_WITH_R_VALUES
@@ -177,7 +188,7 @@ def update_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
 
     if selected:
         if clicked_tile == selected[-1]:
-            if len(selected) > 2:
+            if is_valid_word_length(selected):
                 word = get_word_from_tiles(selected)
                 if check_word_against_dictionaty(word):
                     bonus_mult = 1
@@ -329,6 +340,3 @@ if __name__ == '__main__':
     pygame.display.set_caption("Textagons")
 
     main()
-
-# TODO: Be able to submit with 2 tiles if 1 is "Qu"
-# Actually handle Game Over

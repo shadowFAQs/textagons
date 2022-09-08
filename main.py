@@ -223,6 +223,7 @@ def main() -> None:
     clock = pygame.time.Clock()
     menu_open = False
     tiles_ready = True
+    game_over = False
 
     fonts = get_fonts()
 
@@ -253,6 +254,10 @@ def main() -> None:
         clock.tick(60)
 
         tiles_ready = tiles.is_all_at_target()
+
+        if game_over:
+            menu_open = True
+            ui_group.show_restart_menu(fonts=fonts, game_over=True)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -307,7 +312,8 @@ def main() -> None:
 
         screen.fill(dark_gray)
 
-        tiles.update()
+        game_over = tiles.update()
+
         for tile in tiles:
             screen.blit(tile.image, (tile.rect.x, tile.rect.y))
 
@@ -323,3 +329,6 @@ if __name__ == '__main__':
     pygame.display.set_caption("Textagons")
 
     main()
+
+# TODO: Be able to submit with 2 tiles if 1 is "Qu"
+# Actually handle Game Over

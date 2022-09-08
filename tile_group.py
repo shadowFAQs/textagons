@@ -80,15 +80,23 @@ class TileGroup(pygame.sprite.Group):
     def bottom_row(self) -> list[Tile]:
         return [t for t in self.sprites() if not self.get_tiles_below_tile(t)]
 
-    def burn_down(self, fire_tile: Tile) -> None:
+    def burn_down(self, fire_tile: Tile) -> bool:
+        '''
+        Causes individual fire tiles to burn
+        through their neighbors below.
+
+        Also checks for and returns "Game Over"
+        condition and returns that as a boolean.
+        '''
         fire_tile.burn_ready = False
 
         if self.get_tiles_below_tile(fire_tile):
             tiles_below = self.get_tiles_below_tile(fire_tile)
             if tiles_below:
                 self.remove_tile(tiles_below[0])
+                return False
         else:
-            print('Game over')  # Fire tile was on bottom row
+            return True  # Game over
 
     def deselect(self) -> None:
         for tile in self.sprites():
@@ -203,7 +211,9 @@ class TileGroup(pygame.sprite.Group):
         for tile in self.sprites():
             tile.set_type(tile_type)
 
-    def update(self) -> None:
+    def update(self) -> bool:
+        game_over = False
+
         self.update_tile_targets()
 
         for fire_tile in self.fire_tiles():
@@ -211,9 +221,13 @@ class TileGroup(pygame.sprite.Group):
                 self.get_tiles_below_tile(fire_tile)) and \
                 fire_tile.rect.y == fire_tile.target_y
             if fire_tile.rect.y == fire_tile.target_y and fire_tile.burn_ready:
-                self.burn_down(fire_tile)
+                burn_through_bottom_row = self.burn_down(fire_tile)
+                if burn_through_bottom_row and not game_over:
+                    game_over = True
 
         super().update()  # Calls update() for all child sprites
+
+        return game_over
 
     def update_tile_targets(self) -> None:
         bottom_row = self.bottom_row()

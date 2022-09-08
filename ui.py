@@ -331,18 +331,26 @@ class UIGroup(pygame.sprite.Group):
                            coords=(220, 174), font=fonts['small'])
 
 
-    def show_restart_menu(self, fonts: list[pygame.font.Font]) -> None:
+    def show_restart_menu(self, fonts: list[pygame.font.Font],
+                          game_over: bool=False) -> None:
         menu_dimensions = (261, 150)
         self.add(Menu(label='restart_menu', dimensions=menu_dimensions,
                       offset=(55, 132)))
         restart_menu = self.restart_menu()
-        restart_menu.add_centered_text(text='Restart game?',
-                                       font=fonts['bold_sm'])
-        restart_menu.add_button(label='restart_yes', text='YES',
-                                coords=(70, 112), font=fonts['small'],
-                                color=red)
-        restart_menu.add_button(label='restart_no', text='NO',
-                                coords=(155, 112), font=fonts['small'])
+
+        if game_over:
+            restart_menu.add_centered_text(text='Game over',
+                                           font=fonts['bold_sm'])
+            restart_menu.add_button(label='restart_yes', text='Restart',
+                                    coords=(96, 112), font=fonts['small'])
+        else:
+            restart_menu.add_centered_text(text='Restart game?',
+                                           font=fonts['bold_sm'])
+            restart_menu.add_button(label='restart_yes', text='YES',
+                                    coords=(70, 112), font=fonts['small'],
+                                    color=red)
+            restart_menu.add_button(label='restart_no', text='NO',
+                                    coords=(155, 112), font=fonts['small'])
 
     def show_score_delta(self, delta: str) -> None:
         textfield = [s for s in self.sprites() \

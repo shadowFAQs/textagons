@@ -19,27 +19,22 @@ class TileGroup(pygame.sprite.Group):
         tile among selected tiles; otherwise it
         will return 99.
 
-        * Words shorter than 5 letters never
+        * Words shorter than 5 letters will not
         produce a crystal tile.
-        * 5-letter words have a 20% chance to
-        produce a crystal tile, up to 100% for
-        words 9 letters or longer.
 
         '''
-
-        if word_length < 5:
-            return 99
+                             # Odds of crystal tile
+        if word_length < 5:  # --------------------
+            return 99             # 0%
 
         match word_length:
             case 5:
-                roll_target = 17
+                roll_target = 13  # 40%
             case 6:
-                roll_target = 10
+                roll_target = 7   # 70%
             case 7:
-                roll_target = 6
-            case 8:
-                roll_target = 3
-            case _:
+                roll_target = 6   # 90%
+            case _:               # 100%
                 return choice(range(word_length))
 
         if choice(range(20)) + 1 >= roll_target:

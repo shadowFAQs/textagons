@@ -272,7 +272,7 @@ def main() -> None:
 
         if game_over:
             menu_open = True
-            ui_group.show_game_over_menu(fonts=fonts)
+            ui_group.show_game_over_menu(LONGEST, HIGHEST_SCORING, fonts=fonts)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

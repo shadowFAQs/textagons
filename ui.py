@@ -310,14 +310,33 @@ class UIGroup(pygame.sprite.Group):
         except IndexError:
             return None
 
-    def show_game_over_menu(self, fonts: list[pygame.font.Font]) -> None:
-        menu_dimensions = (261, 150)
+    def show_game_over_menu(self, longest_word: str, highest_scoring: dict,
+                            fonts: list[pygame.font.Font]) -> None:
+        menu_dimensions = (261, 220)
         self.add(Menu(label='game_over_menu', dimensions=menu_dimensions,
                       offset=(55, 132)))
         menu = self.game_over_menu()
         menu.add_centered_text(text='Game over', font=fonts['bold_sm'])
-        menu.add_button(label='restart_yes', text='Restart', coords=(96, 112),
-                        font=fonts['small'])
+
+        # Show longest & best
+        menu.add_text(text='Longest word', font=fonts['mini'],
+                         coords=(10, 70))
+        if longest_word:
+            menu.add_text(text=longest_word, font=fonts['small'],
+                             coords=(25, 86))
+        else:
+            menu.add_text(text='...', font=fonts['small'],
+                             coords=(25, 86))
+        menu.add_text(text='Highest scoring word', font=fonts['mini'],
+                         coords=(10, 120))
+        if highest_scoring:
+            menu.add_multicolor_text(text_obj=highest_scoring,
+                                        font=fonts['small'], coords=(25, 136))
+        else:
+            menu.add_text(text='...', font=fonts['small'],
+                             coords=(25, 136))
+        menu.add_button(label='restart_yes', text='RESTART',
+                           coords=(88, 204), font=fonts['small'])
 
     def show_history(self, longest_word: str, highest_scoring: dict,
                      fonts: list[pygame.font.Font]) -> None:

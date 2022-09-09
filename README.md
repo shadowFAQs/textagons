@@ -14,7 +14,3 @@ This is a Pygame implementation of the classic Flash game "Bookworm" by PopCap. 
 ### Thanks to
 * Burak Karaca on ArtStation for [UI inspiration](https://www.artstation.com/artwork/Lemkll)
 * Johan Aakerlund for [the "Comfortaa" font](https://www.dafont.com/comfortaa.font)
-
-### TODO
-* Click-and-drag to select tiles, release to submit
-* Save & high score list?

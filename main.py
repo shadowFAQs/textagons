@@ -31,8 +31,8 @@ BONUS_WORD = ''
 BONUS_WORD_LENGTH = 2
 SCORE = 0
 DICTIONARY = []
-LONGEST = ''
 HIGHEST_SCORING = {}
+LONGEST = ''
 WORDS_WITH_R_VALUES = []
 R_VALUES = [0, 0, 0, 0.16, 0.22, 0.28, 0.36, 0.42, 0.48, 0.55, 0.61, 0.68,
             0.74, 0.8, 0.87, 0.93, 0.99, 1.07, 1.13, 1.28, 1.31, 1.38]
@@ -42,7 +42,7 @@ def add_word_to_history(tiles: list[Tile], score: int, is_bonus: bool) -> None:
     global LONGEST
     global HIGHEST_SCORING
 
-    if len(tiles) > len(LONGEST):
+    if len(get_word_from_tiles(tiles)) > len(LONGEST):
         LONGEST = get_word_from_tiles(tiles)
 
     if HIGHEST_SCORING:
@@ -99,10 +99,12 @@ def get_word_from_tiles(tiles: list[Tile]) -> str:
 def get_clicked_menu_button(group: UIGroup) -> Button | None:
     mouse_pos = pygame.mouse.get_pos()
 
-    try:
+    if group.restart_menu():
         buttons_iter = iter(group.restart_menu().buttons())
-    except AttributeError:
+    elif group.history():
         buttons_iter = iter(group.history().buttons())
+    else:
+        buttons_iter = iter(group.game_over_menu().buttons())
 
     while True:
         try:
@@ -162,19 +164,21 @@ def load_dictionary() -> None:
 def restart_game(tiles: TileGroup, ui_group: UIGroup) -> None:
     global BONUS_WORD
     global BONUS_WORD_LENGTH
+    global HIGHEST_SCORING
+    global LONGEST
     global SCORE
 
     SCORE = 0
     BONUS_WORD = ''
     BONUS_WORD_LENGTH = 2
+    HIGHEST_SCORING = {}
+    LONGEST = ''
     choose_new_bonus_word(ui_group)
     ui_group.update_textfield_by_label(label='score', text=0)
 
     tiles.deselect()
     tiles.scramble()
     tiles.set_type(1)
-
-    ui_group.hide_restart_menu()
 
 
 def score_tiles(tiles: list[Tile], bonus_mult: int) -> int:
@@ -268,7 +272,7 @@ def main() -> None:
 
         if game_over:
             menu_open = True
-            ui_group.show_restart_menu(fonts=fonts, game_over=True)
+            ui_group.show_game_over_menu(fonts=fonts)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -280,10 +284,7 @@ def main() -> None:
                         if button.label == 'restart_yes':
                             selected_tiles = []
                             restart_game(tiles, ui_group)
-                        elif button.label == 'restart_no':
-                            ui_group.hide_restart_menu()
-                        elif button.label == 'close_history':
-                            ui_group.hide_history()
+                        ui_group.hide_menus()
                         menu_open = False
                 else:
                     if event.button == 3 and tiles_ready:  # Right click
@@ -316,7 +317,10 @@ def main() -> None:
                                 tiles.scramble()
                                 selected_tiles = []
                             elif clicked_sprite.label == 'btn_unmark':
+                                ui_group.clear_text('current_word')
                                 tiles.unmark()
+                                tiles.deselect()
+                                selected_tiles = []
                             elif clicked_sprite.label == 'btn_restart':
                                 menu_open = True
                                 ui_group.show_restart_menu(fonts=fonts)

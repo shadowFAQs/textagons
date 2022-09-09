@@ -53690,7 +53690,7 @@ pyrotechnics,0.62
 pyruvate,0.43
 python,0.26
 pythons,0.31
-pyx,0.05
+pyx,0.15
 pyxes,0.22
 qua,0.14
 quack,0.17
@@ -53742,8 +53742,13 @@ quaff,0.18
 quaffed,0.34
 quaffing,0.36
 quaffs,0.23
+quag,0.16
+quaggier,0.53
+quaggiest,0.63
+quaggy,0.17
 quagmire,0.47
 quagmires,0.52
+quags,0.23
 quahog,0.27
 quahogs,0.32
 quail,0.27
@@ -76093,6 +76098,7 @@ wetlands,0.48
 wetly,0.26
 wetness,0.48
 wets,0.25
+wetted,0.44
 wetter,0.44
 wetters,0.49
 wettest,0.49

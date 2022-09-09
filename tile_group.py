@@ -22,19 +22,19 @@ class TileGroup(pygame.sprite.Group):
         * Words shorter than 5 letters will not
         produce a crystal tile.
 
-        '''
-                             # Odds of crystal tile
-        if word_length < 5:  # --------------------
-            return 99             # 0%
+        '''                  # Odds of crystal tile
+                             # --------------------
+        if word_length < 5:       # 0%
+            return 99
 
         match word_length:
-            case 5:
-                roll_target = 13  # 40%
-            case 6:
-                roll_target = 7   # 70%
-            case 7:
-                roll_target = 6   # 90%
-            case _:               # 100%
+            case 5:               # 40%
+                roll_target = 13
+            case 6:               # 70%
+                roll_target = 7
+            case 7:               # 90%
+                roll_target = 6   # 100%
+            case _:
                 return choice(range(word_length))
 
         if choice(range(20)) + 1 >= roll_target:

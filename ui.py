@@ -58,7 +58,8 @@ class Textfield(pygame.sprite.Sprite):
                  align: str, offset: tuple[float],
                  text_color: pygame.Color=light_gray,
                  static: bool=False, draw_border: bool=False,
-                 border_color: pygame.Color=light_gray) -> None:
+                 border_color: pygame.Color=light_gray,
+                 small_font: pygame.font.Font=None) -> None:
         super().__init__()
 
         self.label = label
@@ -69,7 +70,9 @@ class Textfield(pygame.sprite.Sprite):
         self.static = static
         self.draw_border = draw_border
         self.border_color = border_color
+        self.small_font = small_font
         self.buffer_text = None
+        self.current_font = self.font
         self.flash_timer = 0
         self.flash_timer_max = 120
         self.flash_color = teal
@@ -132,7 +135,8 @@ class Textfield(pygame.sprite.Sprite):
             topleft=(screen_offset_x + offset[0],
                      screen_offset_y + offset[1]))
 
-    def set_text(self, text: str | int, max_size: int = 99) -> None:
+    def set_text(self, text: str | int, max_size: int = 99,
+                 resize: bool = False) -> None:
         '''
         Converts {{ text }} to a str, truncates it if it's longer than
         {{ max_size }}, and displays it.
@@ -145,7 +149,10 @@ class Textfield(pygame.sprite.Sprite):
         '''
         text = str(text)
         if len(text) > max_size:
-            text = f'{text[:3]}...{text[-3:]}'
+            if resize:
+                self.current_font = self.small_font
+            else:
+                text = f'{text[:3]}...{text[-3:]}'
 
         if self.label == 'current_word' and self.flash_timer:
             self.buffer_text = text
@@ -158,13 +165,15 @@ class Textfield(pygame.sprite.Sprite):
         self.animate_flash()
 
         if self.draw_border:
-            text_surf = self.font.render(self.text, True, self.text_color)
+            text_surf = self.current_font.render(self.text, True,
+                                                 self.text_color)
             self.image = pygame.Surface(
                 (text_surf.get_width() + 8, text_surf.get_height() + 8))
             self.image.fill(dark_gray)
             self.image.blit(text_surf, (4, 5))
         else:
-            self.image = self.font.render(self.text, True, self.text_color)
+            self.image = self.current_font.render(self.text, True,
+                                                  self.text_color)
 
         self.set_alignment_and_rect(self.align, self.offset)
 
@@ -274,7 +283,7 @@ class UIGroup(pygame.sprite.Group):
                            offset=(-10, 71), static=True))
         self.add(Textfield(label='bonus_word', font=fonts['bold_sm'],
                            initial_text='', align='topright',
-                           offset=(-10, 95)))
+                           offset=(-10, 95), small_font=fonts['small']))
 
         # Currently selected word
         self.add(Textfield(label='current_word_label', font=fonts['small'],

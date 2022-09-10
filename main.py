@@ -95,7 +95,7 @@ def choose_new_bonus_word(ui_group: UIGroup) -> None:
                  and w[1] > R_VALUES[BONUS_WORD_LENGTH]]
     BONUS_WORD = choice(word_pool).upper()
 
-    ui_group.bonus_word().set_text(BONUS_WORD)
+    ui_group.bonus_word().set_text(BONUS_WORD, max_size=8, resize=True)
     ui_group.bonus_word().flash(yellow)
 
 

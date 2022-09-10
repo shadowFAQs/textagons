@@ -89,7 +89,8 @@ def choose_new_bonus_word(ui_group: UIGroup) -> None:
     global BONUS_WORD
     global BONUS_WORD_LENGTH
 
-    BONUS_WORD_LENGTH += 1
+    if BONUS_WORD_LENGTH < 12:
+        BONUS_WORD_LENGTH += 1
     word_pool = [w[0] for w in WORDS_WITH_R_VALUES \
                  if len(w[0]) == BONUS_WORD_LENGTH \
                  and w[1] > R_VALUES[BONUS_WORD_LENGTH]]

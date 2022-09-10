@@ -36,6 +36,8 @@ class Tile(pygame.sprite.Sprite):
         self.flash_fire = False
         self.flash_timer = 0
         self.flash_timer_max = 5
+        self.inner_points = []
+        self.outer_points = []
         self.marked = False
         self.selected = False
         self.target_y = self.rect.y
@@ -92,21 +94,26 @@ class Tile(pygame.sprite.Sprite):
             else:
                 self.border_color = light_gray
 
-        points = self.calculate_hexagon_points(
-            center_x=tile_size / 2, center_y=tile_size / 2,
-            radius=tile_size / 2 - 4)
-        pygame.gfxdraw.aapolygon(hexagon, points, self.border_color)
-        pygame.gfxdraw.filled_polygon(hexagon, points, self.border_color)
+        if not self.outer_points:
+            self.outer_points = self.calculate_hexagon_points(
+                center_x=tile_size / 2, center_y=tile_size / 2,
+                radius=tile_size / 2 - 4)
+        pygame.gfxdraw.aapolygon(hexagon, self.outer_points,
+                                 self.border_color)
+        pygame.gfxdraw.filled_polygon(hexagon, self.outer_points,
+                                      self.border_color)
 
         # Set collision poly from outer shape for mouse event handling
-        self.set_collision_poly(points)
+        self.set_collision_poly(self.outer_points)
 
         # Draw inner hexagon
-        points = self.calculate_hexagon_points(
-            center_x=tile_size / 2, center_y=tile_size / 2,
-            radius=tile_size / 2 - 8)
-        pygame.gfxdraw.aapolygon(hexagon, points, self.fill_color)
-        pygame.gfxdraw.filled_polygon(hexagon, points, self.fill_color)
+        if not self.inner_points:
+            self.inner_points = self.calculate_hexagon_points(
+                center_x=tile_size / 2, center_y=tile_size / 2,
+                radius=tile_size / 2 - 8)
+        pygame.gfxdraw.aapolygon(hexagon, self.inner_points, self.fill_color)
+        pygame.gfxdraw.filled_polygon(hexagon, self.inner_points,
+                                      self.fill_color)
 
         hexagon.set_colorkey(dark_gray)
 
@@ -144,10 +151,10 @@ class Tile(pygame.sprite.Sprite):
     def remove(self) -> None:
         '''
         Resets tile state, chooses a new letter,
-        and moves up off the top of the screen.
+        and moves tile up off the top of the
+        screen.
         '''
-        self.rect.move_ip(
-            (0, self.rect.y * -1 - self.rect.h))
+        self.rect.move_ip((0, self.rect.y * -1 - self.rect.h))
         self.set_type(1)
         self.burn_ready = False
         self.scramble()
@@ -158,8 +165,6 @@ class Tile(pygame.sprite.Sprite):
         if self.type == 1:  # Special tiles can't be scrambled away
             self.marked = False
             self.choose_letter()
-
-        self.update()
 
     def select(self) -> None:
         self.selected = True

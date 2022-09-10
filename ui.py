@@ -4,6 +4,10 @@ from assets.colors import *
 
 
 class Button(pygame.sprite.Sprite):
+    '''
+    Class for button sprites embedded in menus. The clickable, bordered
+    text boxes on the main screen are Textfield instances.
+    '''
 
     def __init__(self, label: str, text: str, coords: tuple[int],
                  offset: tuple[float], font: pygame.font.Font,
@@ -19,14 +23,18 @@ class Button(pygame.sprite.Sprite):
 
     def collide_point(self, point: tuple[float]) -> bool:
         '''
-        References self.parent_offset since it's
-        placed inside the Menu sprite.
+        References self.parent_offset since
+        Buttons are placed inside Menu sprites.
         '''
-        point_x = point[0] - self.parent_offset[0]
-        point_y = point[1] - self.parent_offset[1]
-        return self.rect.collidepoint((point_x, point_y))
+        return self.rect.collidepoint((point[0] - self.parent_offset[0],
+                                       point[1] - self.parent_offset[1]))
 
     def update(self) -> None:
+        '''
+        A Button's size is determined by the dimensions of
+        {{ self.text }} as rendered in {{ self.font }}, plus 8px of
+        width and 8px of height.
+        '''
         text_surf = self.font.render(self.text, True, self.text_color)
         self.image = pygame.Surface((text_surf.get_width() + 8,
                                      text_surf.get_height() + 8))
@@ -40,6 +48,11 @@ class Button(pygame.sprite.Sprite):
 
 
 class Textfield(pygame.sprite.Sprite):
+    '''
+    Class for static and dynamic text boxes. May be responsive to click
+    events or not. All of the "buttons" on the main screen are actually
+    instances of this class.
+    '''
 
     def __init__(self, label: str, font: pygame.font.Font, initial_text: str,
                  align: str, offset: tuple[float],
@@ -60,10 +73,16 @@ class Textfield(pygame.sprite.Sprite):
         self.flash_timer = 0
         self.flash_timer_max = 120
         self.flash_color = teal
+        self.screen_offset = None
 
         self.set_text(initial_text)
 
     def animate_flash(self) -> None:
+        '''
+        Counts down {{ self.flash_timer }}, changing the Textfield's
+        text color every 5 frames. Sets text to {{ self.buffer_text }}
+        when the timer reaches 0.
+        '''
         if self.flash_timer:
             self.flash_timer -= 1
             if not self.flash_timer % 5:
@@ -77,14 +96,22 @@ class Textfield(pygame.sprite.Sprite):
         else:
             self.text_color = self.default_text_color
 
+    def clear(self) -> None:
+        self.set_text('')
+
     def collide_point(self, point: tuple[float]) -> bool:
+        '''Not really needed, but keeps Textfield in line with Tile.'''
         return self.rect.collidepoint(point)
 
     def flash(self, flash_color: pygame.Color) -> None:
+        '''Turns on flashing text.'''
         self.flash_timer = self.flash_timer_max
         self.flash_color = flash_color
 
     def flash_and_clear(self, flash_color: pygame.Color) -> None:
+        '''Turns on flashing text and loads an empty string into
+        {{ self.buffer_text }}, clearing the Textfield after the
+        flash timer reaches 0.'''
         self.flash_timer = self.flash_timer_max
         self.flash_color = flash_color
         self.buffer_text = ''
@@ -95,7 +122,8 @@ class Textfield(pygame.sprite.Sprite):
 
     def set_alignment_and_rect(self, align: str, offset: tuple[float]) -> None:
         from main import SCREEN_WIDTH, SCREEN_HEIGHT
-        screen_offset_x = SCREEN_WIDTH  - self.image.get_width() \
+
+        screen_offset_x = SCREEN_WIDTH - self.image.get_width() \
             if 'right' in align else 0
         screen_offset_y = SCREEN_HEIGHT - self.image.get_height() \
             if 'bottom' in align else 0
@@ -106,20 +134,16 @@ class Textfield(pygame.sprite.Sprite):
 
     def set_text(self, text: str | int, max_size: int = 99) -> None:
         '''
-        Converts { text } to a str, truncates it
-        if it's longer than 9 characters, and
-        displays it.
+        Converts {{ text }} to a str, truncates it if it's longer than
+        {{ max_size }}, and displays it.
 
-        The "current word" textfield retains its
-        text for a couple seconds after it's
-        cleared so it can flash red to show that
-        the entry wasn't in the dictionary. To
-        allow for this, the new (empty) string is
-        temporarily stored in { buffer_text }
-        until { flash_timer } expires.
+        The "current word" textfield retains its text for a couple
+        seconds after it's cleared so it can flash red to show that
+        the entry wasn't in the dictionary. To allow for this, the new
+        (empty) string is temporarily stored in {{ self.buffer_text }}
+        until the flash timer expires.
         '''
         text = str(text)
-
         if len(text) > max_size:
             text = f'{text[:3]}...{text[-3:]}'
 
@@ -127,6 +151,7 @@ class Textfield(pygame.sprite.Sprite):
             self.buffer_text = text
         else:
             self.text = text
+
         self.update()
 
     def update(self) -> None:
@@ -150,6 +175,12 @@ class Textfield(pygame.sprite.Sprite):
 
 
 class Menu(pygame.sprite.Sprite):
+    '''
+    Class for "modal" style popup menus, which can contain
+    multicolored text and buttons.
+    Each sprite contained within a Menu is stored in its {{ elements }}
+    list; this list is iterated over every frame for drawing.
+    '''
 
     def __init__(self, label: str, dimensions: tuple[int],
         offset: tuple[float]) -> None:
@@ -172,12 +203,17 @@ class Menu(pygame.sprite.Sprite):
 
     def add_multicolor_text(self, text_obj: dict, font: pygame.font.Font,
                             coords: tuple[int]) -> None:
+        '''
+        Special method to support "Highest scoring" words in the
+        history menu; these are displayed with each letter the color
+        of the tile type (bonus, crystal, etc.) when it was submitted.
+        '''
         x_offset = 0
         for index, letter in enumerate(text_obj['letters']):
-            offset = (coords[0] + x_offset, coords[1])
             self.elements.append(Textfield(
                 label='', font=font, initial_text=letter, align='topleft',
-                offset=offset, text_color=text_obj['colors'][index]))
+                offset=(coords[0] + x_offset, coords[1]),
+                text_color=text_obj['colors'][index]))
             x_offset += self.elements[-1].rect.w
 
         value_text = f' ({text_obj["value"]} pts)'
@@ -214,6 +250,10 @@ class Menu(pygame.sprite.Sprite):
 
 
 class UIGroup(pygame.sprite.Group):
+    '''
+    Class to store and manipulate the Textfield objects shown on the
+    main game screen.
+    '''
 
     def __init__(self, fonts: list[pygame.font.Font]):
         super().__init__()
@@ -265,18 +305,11 @@ class UIGroup(pygame.sprite.Group):
                            offset=(-10, -10), text_color=red, static=True,
                            draw_border=True, border_color=red))
 
-        # Convenience properties to easily access
-        # "Current" and "Bonus" word Textfields.
-        for sprite in self.sprites():
-            if sprite.label == 'bonus_word':
-                self.bonus_word = sprite
-            elif sprite.label == 'current_word':
-                self.current_word = sprite
+    def bonus_word(self) -> Textfield:
+        return [e for e in self.sprites() if e.label == 'bonus_word'][0]
 
-    def clear_text(self, textfield_label: str) -> None:
-        textfield = [s for s in self.sprites() \
-                     if s.label == textfield_label][0]
-        textfield.set_text('')
+    def current_word(self) -> Textfield:
+        return [e for e in self.sprites() if e.label == 'current_word'][0]
 
     def flash(self, textfield_label: str, flash_color: pygame.Color) -> None:
         textfield = [s for s in self.sprites() \
@@ -301,14 +334,14 @@ class UIGroup(pygame.sprite.Group):
         except IndexError:
             return None
 
-    def menu_buttons(self) -> list[Button]:
-        return self.restart_menu().elements
-
     def restart_menu(self) -> Menu | None:
         try:
             return [s for s in self.sprites() if s.label == 'restart_menu'][0]
         except IndexError:
             return None
+
+    def score(self) -> Textfield:
+        return [e for e in self.sprites() if e.label == 'score'][0]
 
     def show_game_over_menu(self, longest_word: str, highest_scoring: dict,
                             fonts: list[pygame.font.Font]) -> None:
@@ -318,9 +351,9 @@ class UIGroup(pygame.sprite.Group):
         menu = self.game_over_menu()
         menu.add_centered_text(text='Game over', font=fonts['bold_sm'])
 
-        # Show longest & best
         menu.add_text(text='Longest word', font=fonts['mini'],
                          coords=(10, 70))
+
         if longest_word:
             menu.add_text(text=longest_word, font=fonts['small'],
                              coords=(25, 86))
@@ -335,6 +368,7 @@ class UIGroup(pygame.sprite.Group):
         else:
             menu.add_text(text='...', font=fonts['small'],
                              coords=(25, 136))
+
         menu.add_button(label='restart_yes', text='RESTART',
                            coords=(88, 204), font=fonts['small'])
 
@@ -343,8 +377,10 @@ class UIGroup(pygame.sprite.Group):
         dimensions = (300, 180)
         self.add(Menu(label='history', dimensions=dimensions, offset=(40, 119)))
         history = self.history()
+
         history.add_centered_text(text='Word history', font=fonts['bold_sm'],
                                   y_position=10)
+
         history.add_text(text='Longest word', font=fonts['mini'],
                          coords=(10, 50))
         if longest_word:
@@ -353,6 +389,7 @@ class UIGroup(pygame.sprite.Group):
         else:
             history.add_text(text='...', font=fonts['small'],
                              coords=(25, 66))
+
         history.add_text(text='Highest scoring word', font=fonts['mini'],
                          coords=(10, 100))
         if highest_scoring:
@@ -361,6 +398,7 @@ class UIGroup(pygame.sprite.Group):
         else:
             history.add_text(text='...', font=fonts['small'],
                              coords=(25, 116))
+
         history.add_button(label='close_history', text='CLOSE',
                            coords=(220, 174), font=fonts['small'])
 
@@ -369,6 +407,7 @@ class UIGroup(pygame.sprite.Group):
         self.add(Menu(label='restart_menu', dimensions=menu_dimensions,
                       offset=(55, 132)))
         restart_menu = self.restart_menu()
+
         restart_menu.add_centered_text(text='Restart game?',
                                        font=fonts['bold_sm'])
         restart_menu.add_button(label='restart_yes', text='YES',
@@ -378,11 +417,8 @@ class UIGroup(pygame.sprite.Group):
                                 coords=(155, 112), font=fonts['small'])
 
     def show_score_delta(self, delta: str) -> None:
+        '''Show timed "+X" text next to score display.'''
         textfield = [s for s in self.sprites() \
                      if s.label == 'score_delta'][0]
         textfield.set_text(f'+{delta}')
         textfield.flash_and_clear(green)
-
-    def update_textfield_by_label(self, label: str, text: str) -> None:
-        textfield = [s for s in self.sprites() if s.label == label][0]
-        textfield.set_text(text)

@@ -1,5 +1,6 @@
 from pathlib import Path
 from random import choice
+from typing import Optional
 
 import pygame
 
@@ -10,20 +11,15 @@ from tile_group import TileGroup
 from ui import Textfield, UIGroup, Button
 
 
-'''
-"Textagons" is an updated implementation of the
-classic PopCap game "Bookworm".
+"""
+"Textagons" is an updated implementation of the classic PopCap game "Bookworm".
 
-FYI the longest word in the dictionary is
-"electroencephalographic", which has 23 letters.
-"R values" are a baseline for the rarity of
-letters in a bonus word, and has 22 "levels".
+FYI the longest word in the dictionary is "electroencephalographic", which has 23 letters.
+"R values" are a baseline for the rarity of letters in a bonus word, and have 22 "levels".
 
-Each word in dictionary.txt, and therefore in
-WORDS_WITH_R_VALUES, is listed in lowercase along
-with its hardcoded rarity; this keeps the game
-from choosing overly easy/common bonus words.
-'''
+Each word in dictionary.txt, and therefore in WORDS_WITH_R_VALUES, is listed in lowercase along with its hardcoded
+rarity; this keeps the game from choosing overly easy/common bonus words.
+"""
 
 
 SCREEN_WIDTH = 525
@@ -39,13 +35,11 @@ R_VALUES = [0, 0, 0, 0.16, 0.22, 0.28, 0.36, 0.42, 0.48, 0.55, 0.61, 0.68,
             0.74, 0.8, 0.87, 0.93, 0.99, 1.07, 1.13, 1.28, 1.31, 1.38]
 
 
-def add_word_to_history(tiles: list[Tile], score: int, is_bonus: bool) -> None:
-    '''
-    Updates longest and highest scoring words.
-    Creates a dict for the latter, as we need to
-    store point value and individual letter
-    colors too.
-    '''
+def add_word_to_history(tiles: list[Tile], score: int, is_bonus: bool):
+    """
+    Updates longest and highest scoring words. Creates a dict for the latter, as we need to store point value and
+    individual letter colors too.
+    """
     global LONGEST
     global HIGHEST_SCORING
 
@@ -78,14 +72,11 @@ def check_word_against_dictionaty(word: str) -> bool:
     return word.lower() in DICTIONARY
 
 
-def choose_new_bonus_word(ui_group: UIGroup) -> None:
-    '''
-    Chooses a new bonus word based on the length
-    of the previous bonus word + 1. This choice
-    takes the hardcoded "R values" into account,
-    which makes sure the chosen word isn't too
-    easy to find.
-    '''
+def choose_new_bonus_word(ui_group: UIGroup):
+    """
+    Chooses a new bonus word based on the length of the previous bonus word + 1. This choice takes the hardcoded
+    "R values" (rarity) into account, which makes sure the chosen word isn't too easy to find.
+    """
     global BONUS_WORD
     global BONUS_WORD_LENGTH
 
@@ -104,7 +95,7 @@ def get_word_from_tiles(tiles: list[Tile]) -> str:
     return ''.join([t.letter for t in tiles]).upper()
 
 
-def get_clicked_menu_button(group: UIGroup) -> Button | None:
+def get_clicked_menu_button(group: UIGroup) -> Optional[Button]:
     mouse_pos = pygame.mouse.get_pos()
 
     if group.restart_menu():
@@ -123,8 +114,7 @@ def get_clicked_menu_button(group: UIGroup) -> Button | None:
             return None
 
 
-def get_clicked_sprite(
-    group: pygame.sprite.Group) -> pygame.sprite.Sprite | None:
+def get_clicked_sprite(group: pygame.sprite.Group) -> Optional[pygame.sprite.Sprite]:
     mouse_pos = pygame.mouse.get_pos()
 
     sprites_iter = iter(group)
@@ -137,13 +127,8 @@ def get_clicked_sprite(
             return None
 
 
-def handle_left_mouse_down(ui_group: UIGroup, tiles: TileGroup,
-                           selected: list[Tile]) -> Textfield | Tile | None:
-    '''
-    Returns the object the player clicked on, if
-    any. Checks UI buttons first, then all other
-    sprites.
-    '''
+def handle_left_mouse_down(ui_group: UIGroup, tiles: TileGroup, selected: list[Tile]) -> Textfield | Tile | None:
+    """ Returns the object the player clicked on, if any. Checks UI buttons first, then all other sprites. """
     button = get_clicked_sprite(ui_group)
     if button:
         return button
@@ -152,12 +137,10 @@ def handle_left_mouse_down(ui_group: UIGroup, tiles: TileGroup,
 
 
 def is_valid_word_length(selected_tiles:list[Tile]) -> bool:
-    '''
-    To submit a word, it must contain at least
-    3 letters, which could be on 2 or 3 tiles,
-    depending on if the player selected a "Qu"
-    tile.
-    '''
+    """
+    To submit a word, it must contain at least 3 letters, which could be on 2 or 3 tiles, depending on if the player
+    selected a "Qu" tile.
+    """
     if len(selected_tiles) > 2:
         return True
 
@@ -167,11 +150,8 @@ def is_valid_word_length(selected_tiles:list[Tile]) -> bool:
     return False
 
 
-def load_dictionary() -> None:
-    '''
-    Loads "assets/dictionary.txt" into the global
-    DICTIONARY and WORDS_WITH_R_VALUES vars.
-    '''
+def load_dictionary():
+    """ Loads "assets/dictionary.txt" into the global DICTIONARY and WORDS_WITH_R_VALUES vars. """
     global DICTIONARY
     global WORDS_WITH_R_VALUES
 
@@ -182,7 +162,7 @@ def load_dictionary() -> None:
             WORDS_WITH_R_VALUES.append([entry[0], float(entry[1])])
 
 
-def restart_game(tiles: TileGroup, ui_group: UIGroup) -> None:
+def restart_game(tiles: TileGroup, ui_group: UIGroup):
     global BONUS_WORD
     global BONUS_WORD_LENGTH
     global HIGHEST_SCORING
@@ -206,18 +186,13 @@ def score_tiles(tiles: list[Tile], bonus_mult: int) -> int:
     return sum([t.value for t in tiles]) * len(tiles) * bonus_mult
 
 
-def process_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
-                           selected: list[Tile],
+def process_selected_tiles(clicked_tile: Tile, tiles: TileGroup, selected: list[Tile],
                            ui_group: UIGroup) -> list[Tile]:
-    '''
-    A lot of the game logic lives here. This
-    function selects/deselects tiles, decides
-    when the player has chosen to submit a word,
-    and fires off trigger events for removing
-    tiles, choosing new bonus words, updating the
-    score, and adding entries to the player's
-    word history.
-    '''
+    """
+    A lot of the game logic lives here. This function selects/deselects tiles, decides when the player has chosen to
+    submit a word, and fires off trigger events for removing tiles, choosing new bonus words, updating the score, and
+    adding entries to the player's word history.
+    """
     global SCORE
 
     if selected:
@@ -262,7 +237,7 @@ def process_selected_tiles(clicked_tile: Tile, tiles: TileGroup,
         return [clicked_tile]
 
 
-def main() -> None:
+def main():
     screen_dims = (SCREEN_WIDTH, SCREEN_HEIGHT)
     screen = pygame.display.set_mode(screen_dims)
     clock = pygame.time.Clock()
@@ -371,6 +346,6 @@ def main() -> None:
 
 if __name__ == '__main__':
     pygame.init()
-    pygame.display.set_caption("Textagons")
+    pygame.display.set_caption('Textagons')
 
     main()

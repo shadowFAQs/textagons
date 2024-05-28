@@ -10,6 +10,7 @@ class TileGroup(pygame.sprite.Group):
 
     def __init__(self, num_columns: int):
         super().__init__()
+
         self.num_columns = num_columns
 
     @staticmethod
@@ -17,9 +18,7 @@ class TileGroup(pygame.sprite.Group):
         """
         Check if the submitted word will result in a crystal tile being created. If so, this method will return the
         index of that tile among selected tiles; otherwise it will return 99.
-
-        * Words shorter than 5 letters will not produce a crystal tile.
-
+        Words shorter than 5 letters will not produce a crystal tile.
         """
         if word_length < 5:
             return 99
@@ -44,9 +43,8 @@ class TileGroup(pygame.sprite.Group):
         """
         Check if the submitted word will result in a fire tile being created. If so, this method will return the index
         of that tile among selected tiles; otherwise it will return 99.
-
-        * Words longer than 5 letters never produce a fire tile.
-        * 5-letter words have a 5% chance to produce a fire tile, up to 80% for 3-letter words.
+        Words longer than 5 letters never produce a fire tile.
+        5-letter words have a 5% chance to produce a fire tile, up to 80% for 3-letter words.
         """
         match word_length:
             case 3:
@@ -86,7 +84,13 @@ class TileGroup(pygame.sprite.Group):
             tile.deselect()
 
     def fire_tiles(self) -> list[Tile]:
-        return [t for t in self.sprites() if t.type == 0]
+        return [t for t in self.sprites() if not t.type]
+
+    def get_greatest_fire_tile_y(self) -> int:
+        try:
+            return max(t.rect.y for t in self.sprites() if not t.type)
+        except ValueError:
+            return 0
 
     def get_neighbors(self, tile: Tile) -> list[Tile]:
         return pygame.sprite.spritecollide(tile, self.sprites(), False)

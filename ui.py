@@ -11,8 +11,7 @@ class Button(pygame.sprite.Sprite):
     Textfield instances.
     """
 
-    def __init__(self, label: str, text: str, coords: tuple[int],
-                 offset: tuple[float], font: pygame.font.Font,
+    def __init__(self, label: str, text: str, coords: tuple[int], offset: tuple[float], font: pygame.font.Font,
                  color: pygame.Color=light_gray):
         super().__init__()
 
@@ -222,9 +221,7 @@ class Menu(pygame.sprite.Sprite):
 
 
 class UIGroup(pygame.sprite.Group):
-    """
-    Class to store and manipulate the Textfield objects shown on the main game screen.
-    """
+    """ Class to store and manipulate the Textfield objects shown on the main game screen. """
 
     def __init__(self, fonts: list[pygame.font.Font]):
         super().__init__()

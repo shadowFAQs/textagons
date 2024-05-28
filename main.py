@@ -91,6 +91,29 @@ def choose_new_bonus_word(ui_group: UIGroup):
     ui_group.bonus_word().flash(yellow)
 
 
+def draw_background(screen: pygame.Surface, tiles: TileGroup):
+    """
+    Fills the gameboard background with dark gray. If there is a fire tile at least halfway down the board,
+    draws some amount of red as well. This is my attempt at a linear gradient; we create a tiny gray Surface, draw
+    some red lines on it depending on how close the player is to losing, and then smoothscale it up to the size of the
+    screen.
+    """
+    fire_tile_y = round(tiles.get_greatest_fire_tile_y() / tiles.sprites()[0].image.get_height())
+    if fire_tile_y >= 3:
+        tiny_rect = pygame.Surface((2, 4))
+        tiny_rect.fill(dark_gray)
+
+        col = fire_tile_y - 2
+        while col:
+            faded_red = dark_gray.lerp(dark_red, (fire_tile_y - 2) / 6)
+            pygame.draw.line(tiny_rect, faded_red, (0, 4 - col), (1, 4 - col))
+            col -= 1
+
+        screen.blit(pygame.transform.smoothscale(tiny_rect, screen.get_size()), (0, 0))
+    else:
+        screen.fill(dark_gray)
+
+
 def get_word_from_tiles(tiles: list[Tile]) -> str:
     return ''.join([t.letter for t in tiles]).upper()
 
@@ -204,17 +227,22 @@ def process_selected_tiles(clicked_tile: Tile, tiles: TileGroup, selected: list[
                     if word == BONUS_WORD:
                         bonus_mult = 3
                         choose_new_bonus_word(ui_group)
+
                     delta = score_tiles(selected, bonus_mult)
                     SCORE += delta
+
                     ui_group.show_score_delta(delta=str(delta))
-                    add_word_to_history(tiles=selected, score=delta,
-                                        is_bonus=bonus_mult == 3)
-                    tiles.remove_selected(word_length=len(word),
-                                          is_bonus=bonus_mult == 3)
+
+                    add_word_to_history(tiles=selected, score=delta, is_bonus=bonus_mult == 3)
+
+                    tiles.remove_selected(word_length=len(word), is_bonus=bonus_mult == 3)
+
                     return []
                 else:
                     tiles.deselect()
+
                     ui_group.current_word().flash_and_clear(red)
+
                     return []
             elif len(selected) == 1:
                 clicked_tile.deselect()
@@ -230,6 +258,7 @@ def process_selected_tiles(clicked_tile: Tile, tiles: TileGroup, selected: list[
             return selected
         else:
             tiles.deselect()
+
             clicked_tile.select()
             return [clicked_tile]
     else:
@@ -255,26 +284,22 @@ def main():
     ui_group = UIGroup(fonts)
     choose_new_bonus_word(ui_group)
 
-    tiles = TileGroup(num_columns=num_columns)
+    tiles = TileGroup(num_columns)
     for col in range(num_columns):
         y_offset = tile_size / 2 - 6 if col % 2 else -2
         for row in range(num_rows):
-            coords = (col * tile_size - col * 13,
-                      row * tile_size - row * 8 + y_offset)
-            tiles.add(
-                Tile(tile_size=tile_size, coords=coords, column=col,
-                     fonts=fonts))
+            coords = (col * tile_size - col * 13, row * tile_size - row * 8 + y_offset)
+            tiles.add(Tile(tile_size=tile_size, coords=coords, column=col, fonts=fonts))
 
     tiles.scramble()   # For "bump" animation
     tiles.set_type(1)  # Clear any fire tiles created by scrambling
 
     while running:
         clock.tick(60)
-        tiles_ready = tiles.is_all_at_target()  # Check if tiles have finished
-                                                # their failling animation
+        tiles_ready = tiles.is_all_at_target()  # Check if tiles have finished their failling animation
         if game_over:
             menu_open = True
-            ui_group.show_game_over_menu(LONGEST, HIGHEST_SCORING, fonts=fonts)
+            ui_group.show_game_over_menu(LONGEST, HIGHEST_SCORING, fonts)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -296,23 +321,18 @@ def main():
                             tile.toggle_mark()
 
                     elif event.button == 1:                # <- Left click
-                        clicked_sprite = handle_left_mouse_down(
-                            ui_group, tiles, selected_tiles)
+                        clicked_sprite = handle_left_mouse_down(ui_group, tiles, selected_tiles)
 
                         if type(clicked_sprite) == Tile and tiles_ready:
                             ui_group.current_word().kill_flash()
 
-                            selected_tiles = process_selected_tiles(
-                                clicked_sprite, tiles, selected_tiles,
-                                ui_group)
-                            ui_group.current_word().set_text(
-                                get_word_from_tiles(selected_tiles),
-                                max_size=8)
+                            selected_tiles = process_selected_tiles(clicked_sprite, tiles, selected_tiles, ui_group)
+                            ui_group.current_word().set_text(get_word_from_tiles(selected_tiles), max_size=8)
                             ui_group.score().set_text(SCORE)
+
                         elif type(clicked_sprite) == Textfield:
                             if clicked_sprite.label == 'btn_history':
-                                ui_group.show_history(LONGEST, HIGHEST_SCORING,
-                                                      fonts=fonts)
+                                ui_group.show_history(LONGEST, HIGHEST_SCORING, fonts)
                                 menu_open = True
 
                             elif clicked_sprite.label == 'btn_scramble' \
@@ -329,10 +349,11 @@ def main():
 
                             elif clicked_sprite.label == 'btn_restart':
                                 menu_open = True
-                                ui_group.show_restart_menu(fonts=fonts)
+                                ui_group.show_restart_menu(fonts)
 
-        screen.fill(dark_gray)
-        game_over = tiles.update()  # Checks for fire tiles on the bottom row
+        draw_background(screen, tiles)
+
+        game_over = tiles.update()  # <- Checks for fire tiles on the bottom row
 
         for tile in tiles:
             screen.blit(tile.image, (tile.rect.x, tile.rect.y))
